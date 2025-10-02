@@ -2,6 +2,7 @@
 
 import logging
 from typing import List, Dict, Any
+from pathlib import Path
 from fastapi import FastAPI, HTTPException
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
@@ -53,7 +54,11 @@ async def startup_event():
 @app.get("/", response_class=HTMLResponse)
 async def root():
     """Serve the main search interface."""
-    return HTMLResponse(content=get_html_content())
+    # Serve the static HTML file
+    html_file = Path(__file__).parent / "ui" / "index.html"
+    with open(html_file, 'r') as f:
+        content = f.read()
+    return HTMLResponse(content=content)
 
 
 @app.post("/api/search", response_model=SearchResponseModel)
@@ -102,6 +107,31 @@ async def search(request: SearchRequestModel):
         
     except Exception as e:
         logger.error(f"Search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/api/stats")
+async def stats():
+    """Get database and index statistics."""
+    try:
+        episode_count = db.get_episode_count()
+        chunk_count = db.get_chunk_count()
+        
+        stats = {
+            "episodes": episode_count,
+            "chunks": chunk_count,
+            "index_loaded": is_index_loaded()
+        }
+        
+        if is_index_loaded():
+            from .index import get_index_stats
+            index_stats = get_index_stats()
+            stats.update(index_stats)
+        
+        return stats
+        
+    except Exception as e:
+        logger.error(f"Stats error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 

@@ -14,7 +14,9 @@ A local-first semantic search tool for "Daniel and Kelly's Extraordinary Univers
 
 ## Quick Start
 
-### 1. Setup Environment
+### Local Development
+
+#### 1. Setup Environment
 
 ```bash
 # Create virtual environment
@@ -30,7 +32,7 @@ source .venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### 2. Ingest and Index Episodes
+#### 2. Ingest and Index Episodes
 
 ```bash
 # Fetch all episodes and build search index
@@ -45,7 +47,7 @@ This will:
 - Generate embeddings using sentence-transformers
 - Build a FAISS vector index
 
-### 3. Search Episodes
+#### 3. Search Episodes
 
 #### Command Line
 ```bash
@@ -66,6 +68,25 @@ uvicorn app.api:app --reload --port 8000
 
 # Open http://localhost:8000 in your browser
 ```
+
+### Railway Deployment
+
+For production deployment on Railway with PostgreSQL:
+
+1. **Follow the detailed guide**: See [RAILWAY_DEPLOYMENT.md](RAILWAY_DEPLOYMENT.md)
+2. **Quick deployment**:
+   ```bash
+   # Install Railway CLI
+   npm install -g @railway/cli
+   
+   # Login and deploy
+   railway login
+   railway init
+   railway add postgresql
+   railway up
+   ```
+
+The Railway deployment uses PostgreSQL as the single database, eliminating the need for SQLite in production.
 
 ## Configuration
 

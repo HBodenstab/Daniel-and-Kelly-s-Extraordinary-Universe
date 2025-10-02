@@ -32,6 +32,13 @@ EMBEDDINGS_PATH = DATA_DIR / "embeddings.npz"
 
 # Database settings
 DB_TIMEOUT = 30  # seconds
+DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{SQLITE_PATH}")
 
 # Logging
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
+
+
+def get_embedding_dimension() -> int:
+    """Get the dimension of embeddings from the model."""
+    # Default dimension for all-MiniLM-L6-v2 model
+    return 384

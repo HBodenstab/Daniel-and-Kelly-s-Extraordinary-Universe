@@ -11,3 +11,9 @@ rank-bm25==0.2.2
 rapidfuzz==3.*
 click==8.*
 python-multipart==0.0.*
+# Database support
+sqlalchemy==2.*
+psycopg2-binary==2.*
+alembic==1.*
+# Production server
+gunicorn==21.*
