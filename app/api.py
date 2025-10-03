@@ -70,6 +70,28 @@ async def root():
     return HTMLResponse(content=content)
 
 
+@app.get("/search", response_class=HTMLResponse)
+async def search_page(q: str = ""):
+    """Serve the search page with optional query parameter."""
+    # Serve the static HTML file
+    html_file = Path(__file__).parent / "ui" / "search.html"
+    try:
+        with open(html_file, 'r') as f:
+            content = f.read()
+        # Replace placeholder with actual query if provided
+        if q:
+            content = content.replace('{{query}}', q)
+        else:
+            content = content.replace('{{query}}', '')
+        return HTMLResponse(content=content)
+    except FileNotFoundError:
+        # Fallback to index.html if search.html doesn't exist
+        html_file = Path(__file__).parent / "ui" / "index.html"
+        with open(html_file, 'r') as f:
+            content = f.read()
+        return HTMLResponse(content=content)
+
+
 @app.post("/api/search", response_model=SearchResponseModel)
 async def search(request: SearchRequestModel):
     """Search through podcast episodes."""

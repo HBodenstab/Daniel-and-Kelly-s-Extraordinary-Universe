@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search - Daniel & Kelly's Extraordinary Universe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%2300E6FF'/%3E%3Cstop offset='100%25' stop-color='%230B1D3A'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Cpath d='M14 34c10-2 26-2 36 0M22 22l-4-6m6 4l-6 4M46 46l6 4m-4-6l4-6' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' fill='none' opacity='.7'/%3E%3C/svg%3E">
+    <style>
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{color:#fff;background:radial-gradient(1200px 800px at 70% -10%, rgba(122,79,255,.25), transparent 60%),linear-gradient(180deg, #0B1D3A 0%, #0A1830 100%);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+        .site-header{max-width:72rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:24px}
+        .brand{font-weight:700;letter-spacing:.2px;color:#BBD7FF;text-decoration:none}
+        .nav a{color:#CFE6FF;text-decoration:none;margin-left:16px;opacity:.9}
+        .nav a:hover{opacity:1;color:#00E6FF}
+        .search-container{max-width:72rem;margin:0 auto;padding:32px 24px}
+        .search-form{display:flex;gap:8px;margin-bottom:32px;max-width:700px}
+        .search-form input{flex:1;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(6,18,38,.6);color:#fff;font-size:16px}
+        .search-form input:focus{border-color:#00E6FF;box-shadow:0 0 0 3px rgba(0,230,255,.25);outline:none}
+        .search-form button{padding:14px 18px;border-radius:12px;border:0;background:#00E6FF;color:#051324;font-weight:700;cursor:pointer}
+        .search-form button:hover{background:#00CCE6}
+        .results{margin-top:32px}
+        .result{background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:12px;padding:20px;margin-bottom:16px}
+        .result-title{font-size:18px;font-weight:600;margin-bottom:8px;color:#00E6FF}
+        .result-title a{color:inherit;text-decoration:none}
+        .result-title a:hover{text-decoration:underline}
+        .result-meta{color:#94A3B8;font-size:14px;margin-bottom:12px}
+        .result-snippet{color:#E2E8F0;line-height:1.6}
+        .result-score{color:#10B981;font-size:12px;font-weight:500;margin-top:8px}
+        .loading{text-align:center;color:#94A3B8;padding:40px}
+        .error{background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.3);border-radius:8px;padding:16px;margin-bottom:16px;color:#FCA5A5}
+        .no-results{text-align:center;color:#94A3B8;padding:40px}
+        @media (max-width:700px){.nav{display:none}.search-form{flex-direction:column}}
+    </style>
+</head>
+<body>
+    <header class="site-header">
+        <a class="brand" href="/">Extraordinary Universe</a>
+        <nav class="nav">
+            <a href="/episodes">Episodes</a>
+            <a href="/search">Search</a>
+        </nav>
+    </header>
+
+    <main class="search-container">
+        <h1>Search the Universe</h1>
+        <form class="search-form" id="searchForm">
+            <input type="text" name="query" id="searchInput" placeholder="Try 'relativity', 'time dilation', 'consciousness'..." value="{{query}}" autofocus>
+            <button type="submit">Search</button>
+        </form>
+
+        <div id="results" class="results">
+            <div class="no-results">Enter a search term to find episodes</div>
+        </div>
+    </main>
+
+    <script>
+        const searchForm = document.getElementById('searchForm');
+        const searchInput = document.getElementById('searchInput');
+        const resultsDiv = document.getElementById('results');
+
+        // Handle form submission
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const query = searchInput.value.trim();
+            if (!query) return;
+
+            // Show loading
+            resultsDiv.innerHTML = '<div class="loading">Searching the universe...</div>';
+
+            try {
+                const response = await fetch('/api/search', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        query: query,
+                        top_k: 10
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+
+                const data = await response.json();
+                displayResults(data);
+
+            } catch (error) {
+                console.error('Search error:', error);
+                resultsDiv.innerHTML = `<div class="error">Search failed: ${error.message}</div>`;
+            }
+        });
+
+        function displayResults(data) {
+            if (!data.results || data.results.length === 0) {
+                resultsDiv.innerHTML = '<div class="no-results">No episodes found. Try different keywords.</div>';
+                return;
+            }
+
+            const resultsHtml = data.results.map(result => `
+                <div class="result">
+                    <h3 class="result-title">
+                        <a href="${result.link}" target="_blank">${result.title}</a>
+                    </h3>
+                    <div class="result-meta">
+                        ${result.pub_date ? new Date(result.pub_date).toLocaleDateString() : 'Unknown date'}
+                    </div>
+                    <div class="result-snippet">${result.snippet}</div>
+                    <div class="result-score">Score: ${(result.score * 100).toFixed(1)}%</div>
+                </div>
+            `).join('');
+
+            resultsDiv.innerHTML = resultsHtml;
+        }
+
+        // Auto-search if query is in URL
+        const urlParams = new URLSearchParams(window.location.search);
+        const queryParam = urlParams.get('q');
+        if (queryParam) {
+            searchInput.value = queryParam;
+            searchForm.dispatchEvent(new Event('submit'));
+        }
+    </script>
+</body>
+</html>
