@@ -198,6 +198,11 @@
             opacity: 0;
             animation: fadeInUp 1s ease 1.1s forwards;
         }
+        
+        .episodes-cta {
+            text-align: center;
+            margin: 2rem 0;
+        }
         .btn {
             display: inline-flex;
             align-items: center;
@@ -533,80 +538,6 @@
             letter-spacing: 0.5px;
         }
 
-        /* How it works */
-        .hiw-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 2rem;
-            margin-top: 3rem;
-        }
-        .hiw-card {
-            background: var(--surface);
-            border: 1px solid var(--border-light);
-            border-radius: var(--radius-xl);
-            padding: 2rem 1.5rem;
-            text-align: center;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-        .hiw-card:hover {
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
-            border-color: var(--primary-color);
-        }
-        .hiw-card h4 { 
-            font-family: 'Inter', sans-serif;
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            color: var(--primary-color);
-        }
-        .hiw-card p { 
-            font-family: 'Merriweather', Georgia, serif;
-            color: var(--text-secondary); 
-            font-size: 1rem;
-            line-height: 1.5;
-        }
-        
-        /* Pipeline visual */
-        .pipeline {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 1rem;
-            margin: 3rem 0;
-            flex-wrap: wrap;
-        }
-        .pipeline-step {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: 0.5rem;
-            opacity: 0;
-            animation: fadeInUp 0.6s ease forwards;
-        }
-        .pipeline-step:nth-child(1) { animation-delay: 0.2s; }
-        .pipeline-step:nth-child(2) { animation-delay: 0.4s; }
-        .pipeline-step:nth-child(3) { animation-delay: 0.6s; }
-        .pipeline-step:nth-child(4) { animation-delay: 0.8s; }
-        .pipeline-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: linear-gradient(135deg, var(--primary-color), var(--accent-violet));
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #001018;
-            font-weight: 700;
-            font-size: 1.25rem;
-        }
-        .pipeline-arrow {
-            color: var(--primary-color);
-            font-size: 1.5rem;
-            margin: 0 0.5rem;
-        }
 
         /* Footer */
         .site-footer {
@@ -744,19 +675,6 @@
                 font-size: 2rem;
             }
             
-            .hiw-grid {
-                grid-template-columns: 1fr;
-                gap: 1.5rem;
-            }
-            
-            .pipeline {
-                flex-direction: column;
-                gap: 2rem;
-            }
-            
-            .pipeline-arrow {
-                transform: rotate(90deg);
-            }
             
             .nav-links {
                 display: none; /* Will implement hamburger menu */
@@ -811,10 +729,8 @@
                 <span class="brand-name">Extraordinary Universe</span>
             </a>
             <nav class="nav-links" aria-label="Primary">
-                <a href="#about">About</a>
                 <a href="#episodes">Episodes</a>
                 <a href="#search">Search</a>
-                <a href="#contact">Contact</a>
             </nav>
         </div>
     </header>
@@ -829,9 +745,8 @@
                 <p class="hero-sub">Stories, voices, and ideas—searchable, connected, alive in a universe without boundaries.</p>
                 <div class="hero-ctas">
                     <a class="btn btn-primary" href="#search">Search the Universe</a>
-                    <a class="btn btn-secondary" href="#episodes">Discover Episodes</a>
-                </div>
-                
+    </div>
+
                 <div class="hero-search">
                     <div class="hero-search-input">
                         <input type="text" placeholder="Search for topics like 'relativity', 'time dilation', 'quantum mechanics'..." id="heroSearchInput">
@@ -842,65 +757,16 @@
         </div>
     </section>
 
-    <section class="section" id="about" aria-label="About">
-        <div class="container">
-            <h3 class="section-title">About</h3>
-            <p class="section-sub">Daniel & Kelly’s Extraordinary Universe explores the future of AI and human imagination—through stories, voices, and ideas that connect us all.</p>
-    </div>
-    </section>
-
-    <section class="section" id="how" aria-label="How It Works">
-        <div class="container">
-            <h3 class="section-title">How it Works</h3>
-            <p class="section-sub">From RSS to insight: a precise pipeline for turning conversations into a searchable universe.</p>
-            
-            <div class="pipeline">
-                <div class="pipeline-step">
-                    <div class="pipeline-icon">RSS</div>
-                    <span>Ingest</span>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-icon">📝</div>
-                    <span>Chunk</span>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-icon">🧠</div>
-                    <span>Embed</span>
-                </div>
-                <div class="pipeline-arrow">→</div>
-                <div class="pipeline-step">
-                    <div class="pipeline-icon">🔍</div>
-                    <span>Search</span>
-                </div>
-            </div>
-            
-            <div class="hiw-grid">
-                <div class="hiw-card">
-                    <h4>1. Ingest</h4>
-                    <p>Fetch RSS, parse episode pages, extract transcripts and metadata.</p>
-                </div>
-                <div class="hiw-card">
-                    <h4>2. Chunk</h4>
-                    <p>Split transcripts into overlapping segments for semantic precision.</p>
-                </div>
-                <div class="hiw-card">
-                    <h4>3. Embed</h4>
-                    <p>Generate vector embeddings and build a FAISS index.</p>
-                </div>
-                <div class="hiw-card">
-                    <h4>4. Search</h4>
-                    <p>Hybrid semantic + lexical retrieval, then rank for relevance.</p>
-                </div>
-            </div>
-        </div>
-    </section>
 
     <section class="section" id="episodes" aria-label="Episodes">
         <div class="container">
             <h3 class="section-title">Episodes</h3>
             <p class="section-sub">Browse and explore all episodes from Daniel & Kelly's Extraordinary Universe.</p>
+            
+            <div class="episodes-cta">
+                <a class="btn btn-primary" href="#search">Search the Universe</a>
+            </div>
+            
             <div class="search-container" id="search">
             <div class="stats-card" id="stats">
                 <div class="stat-item">
@@ -954,11 +820,10 @@
         </div>
     </section>
 
-    <footer class="site-footer" id="contact" aria-label="Footer">
+    <footer class="site-footer" aria-label="Footer">
         <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
             <div>© <span id="year"></span> Extraordinary Universe</div>
             <div style="display:flex;gap:1rem;">
-                <a href="#about" class="nav-link">About</a>
                 <a href="#episodes" class="nav-link">Episodes</a>
                 <a href="#search" class="nav-link">Search</a>
             </div>
