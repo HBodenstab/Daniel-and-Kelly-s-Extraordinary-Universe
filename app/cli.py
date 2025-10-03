@@ -2,9 +2,12 @@
 
 import click
 import logging
+import os
+import sqlite3
+from pathlib import Path
 from typing import List
 
-from .models import SearchResult
+from .models import SearchResult, Episode, Chunk
 from .storage import db
 from .fetch import fetch_episode_data
 from .chunk import chunk_episode_content
@@ -13,6 +16,7 @@ from .index import build_faiss_index
 from .rank import rank_results, lexical_search_episodes
 from .embed import embed_query, clear_embeddings
 from .index import load_faiss_index, semantic_search, is_index_loaded
+from .config import SQLITE_PATH
 
 # Configure logging
 logging.basicConfig(
@@ -216,3 +220,104 @@ def clear():
 
 if __name__ == '__main__':
     cli()
+
+
+@cli.command()
+@click.option('--from-sqlite', 'from_sqlite', default=None, help='Path to source SQLite file (defaults to local data store)')
+@click.option('--to-url', 'to_url', default=None, help='Destination DATABASE_URL (defaults to env DATABASE_URL)')
+def migrate(from_sqlite: str | None, to_url: str | None):
+    """Migrate episodes and chunks from local SQLite to destination database.
+
+    By default, reads from the local SQLite at `SQLITE_PATH` and writes to the
+    database specified by the `DATABASE_URL` environment variable (Railway).
+    """
+    logger.info("Starting migration...")
+
+    # Determine source and destination
+    source_path = from_sqlite or str(SQLITE_PATH)
+    dest_url = to_url or os.getenv("DATABASE_URL")
+
+    if not dest_url:
+        logger.error("Destination DATABASE_URL is not set. Provide --to-url or set env var.")
+        raise SystemExit(1)
+
+    if not Path(source_path).exists():
+        logger.error(f"Source SQLite not found: {source_path}")
+        raise SystemExit(1)
+
+    logger.info(f"Source (SQLite): {source_path}")
+    logger.info("Destination: DATABASE_URL (configured in environment)")
+
+    # Open source SQLite read-only
+    try:
+        conn = sqlite3.connect(source_path)
+        conn.row_factory = sqlite3.Row
+    except Exception as e:
+        logger.error(f"Failed to open source database: {e}")
+        raise SystemExit(1)
+
+    migrated_episodes = 0
+    migrated_chunks = 0
+
+    try:
+        # Read all episodes
+        ep_rows = conn.execute(
+            """
+            SELECT id, guid, title, link, pub_date, description, transcript
+            FROM episodes
+            ORDER BY id
+            """
+        ).fetchall()
+
+        logger.info(f"Found {len(ep_rows)} episodes to migrate")
+
+        for ep_row in ep_rows:
+            episode = Episode(
+                id=None,
+                guid=ep_row["guid"],
+                title=ep_row["title"],
+                link=ep_row["link"],
+                pub_date=ep_row["pub_date"],
+                description=ep_row["description"],
+                transcript=ep_row["transcript"],
+            )
+
+            dest_episode_id = db.upsert_episode(episode)
+            migrated_episodes += 1
+
+            # Read chunks for this episode
+            ch_rows = conn.execute(
+                """
+                SELECT idx, text, start, end
+                FROM chunks
+                WHERE episode_id = ?
+                ORDER BY idx
+                """,
+                (ep_row["id"],),
+            ).fetchall()
+
+            if ch_rows:
+                chunks: List[Chunk] = [
+                    Chunk(
+                        id=None,
+                        episode_id=dest_episode_id,
+                        idx=cr["idx"],
+                        text=cr["text"],
+                        start=cr["start"],
+                        end=cr["end"],
+                    )
+                    for cr in ch_rows
+                ]
+
+                db.add_chunks(dest_episode_id, chunks)
+                migrated_chunks += len(chunks)
+
+        logger.info("Migration completed successfully")
+        logger.info(f"Episodes migrated: {migrated_episodes}")
+        logger.info(f"Chunks migrated: {migrated_chunks}")
+
+    except Exception as e:
+        logger.error(f"Migration failed: {e}")
+        raise
+    finally:
+        conn.close()
