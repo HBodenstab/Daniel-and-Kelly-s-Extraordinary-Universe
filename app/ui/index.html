@@ -6,51 +6,32 @@
     <title>Daniel & Kelly's Extraordinary Universe</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Source+Serif+Pro:wght@300;400;600&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%2300E6FF'/%3E%3Cstop offset='100%25' stop-color='%230B1D3A'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Cpath d='M14 34c10-2 26-2 36 0M22 22l-4-6m6 4l-6 4M46 46l6 4m-4-6l4-6' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' fill='none' opacity='.7'/%3E%3C/svg%3E">
     <style>
-        :root{
-            --bg:#0B1D3A; --fg:#FFFFFF; --muted:#9AA4B2;
-            --accent:#00E6FF; --accent2:#7A4FFF;
-            --maxw: 72rem; /* 1152px */
-            --space: 8px;
-        }
-        *{box-sizing:border-box}
-        body{margin:0; color:var(--fg); background:
-            radial-gradient(1200px 800px at 70% -10%, rgba(122,79,255,.25), transparent 60%),
-            linear-gradient(180deg, #0B1D3A 0%, #0A1830 100%); font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif}
-        .site-header,.site-footer{max-width:var(--maxw); margin:0 auto; display:flex; align-items:center; justify-content:space-between; padding:calc(var(--space)*3) calc(var(--space)*2)}
-        .brand{font-weight:700; letter-spacing:.2px; color:#BBD7FF; text-decoration:none}
-        .nav a,.footer-nav a{color:#CFE6FF; text-decoration:none; margin-left:16px; opacity:.9}
-        .nav a:hover,.footer-nav a:hover{opacity:1; color:var(--accent)}
-
-        .hero{max-width:var(--maxw); margin:0 auto; padding:12vh 24px 8vh; text-align:center}
-        .eyebrow{color:var(--accent); font-weight:700; letter-spacing:.12em; text-transform:uppercase; margin:0 0 16px}
-        .hero h1{font-weight:800; font-size: clamp(32px, 6vw, 72px); line-height:1.1; margin:0 auto; max-width: 16ch}
-        .subhead{color:#E2E8F0; font-size: clamp(16px, 2vw, 22px); line-height:1.5; margin:32px auto 0; max-width: 48rem}
-        .cta-row{display:flex; gap:16px; justify-content:center; margin-top:40px}
-        .btn{display:inline-block; padding:14px 20px; border-radius:12px; font-weight:700}
-        .btn-primary{background: linear-gradient(90deg, var(--accent), var(--accent2)); color:#071422; box-shadow:0 8px 30px rgba(0,230,255,.25)}
-        .btn-primary:hover{transform:translateY(-1px)}
-        .btn-secondary{border:1px solid rgba(255,255,255,.2); color:#fff}
-        .btn-secondary:hover{border-color:rgba(255,255,255,.4)}
-
-        .hero-search{margin:24px auto 0; display:flex; gap:8px; justify-content:center; max-width:700px; padding:8px}
-        .hero-search input{flex:1; padding:14px 16px; border-radius:12px; border:1px solid rgba(255,255,255,.25); background:rgba(6,18,38,.6); color:#fff; outline:none}
-        .hero-search input:focus{border-color:var(--accent); box-shadow:0 0 0 3px rgba(0,230,255,.25)}
-        .hero-search button{padding:14px 18px; border-radius:12px; border:0; background:var(--accent); color:#051324; font-weight:700}
-
-        .explore{max-width:var(--maxw); margin:0 auto; padding:72px 24px}
-        .explore h2{text-align:center; margin:0 0 24px}
-        .topic-chips{display:flex; flex-wrap:wrap; gap:10px; justify-content:center; padding:0; list-style:none}
-        .topic-chips a{display:inline-block; padding:10px 14px; border-radius:999px; border:1px solid rgba(255,255,255,.2); color:#E5EEF9; text-decoration:none}
-        .topic-chips a:hover{border-color:var(--accent); color:#fff}
-
-        .site-footer{border-top:1px solid rgba(255,255,255,.08); color:#cbd5e1}
-        @media (max-width:700px){
-            .nav{display:none}
-            .cta-row{flex-direction:column}
-        }
+        *{box-sizing:border-box;margin:0;padding:0}
+        body{color:#fff;background:radial-gradient(1200px 800px at 70% -10%, rgba(122,79,255,.25), transparent 60%),linear-gradient(180deg, #0B1D3A 0%, #0A1830 100%);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+        .site-header{max-width:72rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:24px}
+        .brand{font-weight:700;letter-spacing:.2px;color:#BBD7FF;text-decoration:none}
+        .nav a{color:#CFE6FF;text-decoration:none;margin-left:16px;opacity:.9}
+        .nav a:hover{opacity:1;color:#00E6FF}
+        .hero{max-width:72rem;margin:0 auto;padding:12vh 24px 8vh;text-align:center}
+        .eyebrow{color:#00E6FF;letter-spacing:.12em;text-transform:uppercase;margin:0 0 16px}
+        .hero h1{font-weight:800;font-size:clamp(32px,6vw,72px);line-height:1.1;margin:0 auto;max-width:16ch}
+        .subhead{color:#E2E8F0;font-size:clamp(16px,2vw,22px);line-height:1.5;margin:32px auto 0;max-width:48rem}
+        .cta-row{display:flex;gap:16px;justify-content:center;margin-top:40px}
+        .btn{display:inline-block;padding:14px 20px;border-radius:12px;font-weight:700;text-decoration:none}
+        .btn-primary{background:linear-gradient(90deg,#00E6FF,#7A4FFF);color:#071422}
+        .btn-secondary{border:1px solid rgba(255,255,255,.25);color:#fff}
+        .hero-search{margin:24px auto 0;display:flex;gap:8px;justify-content:center;max-width:700px}
+        .hero-search input{flex:1;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(6,18,38,.6);color:#fff}
+        .hero-search input:focus{border-color:#00E6FF;box-shadow:0 0 0 3px rgba(0,230,255,.25)}
+        .hero-search button{padding:14px 18px;border-radius:12px;border:0;background:#00E6FF;color:#051324;font-weight:700}
+        .explore{max-width:72rem;margin:0 auto;padding:72px 24px}
+        .topic-chips{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;list-style:none;padding:0;margin:0}
+        .topic-chips a{display:inline-block;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#E5EEF9;text-decoration:none}
+        .site-footer{max-width:72rem;margin:0 auto;padding:32px 24px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;color:#cbd5e1}
+        @media (max-width:700px){.nav{display:none}.cta-row{flex-direction:column}}
     </style>
 </head>
 <body>
@@ -71,7 +52,7 @@
             <a class="btn btn-secondary" href="/episodes">Browse Episodes</a>
         </div>
         <form class="hero-search" action="/search">
-            <input name="q" placeholder="Try 'relativity', 'time dilation', 'quantum', 'white chocolate'" />
+            <input name="q" placeholder="Try 'relativity', 'time dilation', 'white chocolate'…"/>
             <button type="submit">Search</button>
         </form>
     </section>
@@ -80,20 +61,17 @@
         <h2>Explore Topics</h2>
         <ul class="topic-chips">
             <li><a href="/search?q=relativity">relativity</a></li>
-            <li><a href="/search?q=quantum mechanics">quantum mechanics</a></li>
-            <li><a href="/search?q=time dilation">time dilation</a></li>
+            <li><a href="/search?q=quantum%20mechanics">quantum mechanics</a></li>
+            <li><a href="/search?q=time%20dilation">time dilation</a></li>
             <li><a href="/search?q=consciousness">consciousness</a></li>
-            <li><a href="/search?q=black holes">black holes</a></li>
+            <li><a href="/search?q=black%20holes">black holes</a></li>
             <li><a href="/search?q=multiverse">multiverse</a></li>
         </ul>
     </section>
 
     <footer class="site-footer">
-        <div class="footer-left">© Daniel & Kelly's Extraordinary Universe</div>
-        <nav class="footer-nav">
-            <a href="/episodes">Episodes</a>
-            <a href="/search">Search</a>
-        </nav>
+        <div>© Daniel & Kelly's Extraordinary Universe</div>
+        <nav><a href="/episodes">Episodes</a> · <a href="/search">Search</a></nav>
     </footer>
 </body>
 </html>
