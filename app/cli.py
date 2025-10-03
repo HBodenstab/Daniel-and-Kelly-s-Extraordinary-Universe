@@ -125,29 +125,9 @@ def search(query: str, top_k: int, lexical_only: bool):
     try:
         results: List[SearchResult]
         
-        if lexical_only:
-            logger.info("Using lexical search only")
-            results = lexical_search_episodes(query, top_k)
-        else:
-            # Check if index is loaded
-            if not is_index_loaded():
-                logger.info("Loading search index...")
-                if not load_faiss_index():
-                    logger.warning("Could not load semantic index, falling back to lexical search")
-                    results = lexical_search_episodes(query, top_k)
-                else:
-                    logger.info("Index loaded successfully")
-            
-            if is_index_loaded():
-                # Perform semantic search
-                logger.info("Performing semantic search...")
-                query_embedding = embed_query(query)
-                semantic_results = semantic_search(query_embedding, top_k * 2)  # Get more for ranking
-                
-                # Rank results
-                results = rank_results(query, semantic_results, top_k)
-            else:
-                results = lexical_search_episodes(query, top_k)
+        # For now, use lexical search only since FAISS index is too large
+        logger.info("Using lexical search (FAISS index too large for quick loading)")
+        results = lexical_search_episodes(query, top_k)
         
         # Display results
         if not results:
@@ -159,7 +139,7 @@ def search(query: str, top_k: int, lexical_only: bool):
         
         for i, result in enumerate(results, 1):
             print(f"\n{i}. {result.title}")
-            print(f"   Score: {result.score:.3f} (semantic: {result.semantic_score:.3f}, lexical: {result.lexical_score:.3f})")
+            print(f"   Score: {result.score:.3f}")
             print(f"   Date: {result.pub_date or 'Unknown'}")
             print(f"   Link: {result.link}")
             print(f"   Snippet: {result.snippet}")
