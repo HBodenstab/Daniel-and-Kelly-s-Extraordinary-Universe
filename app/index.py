@@ -1,10 +1,20 @@
 """FAISS vector indexing and search functionality."""
 
-import faiss
-import numpy as np
 import logging
 from typing import List, Tuple, Optional, Dict
 from pathlib import Path
+
+# Try to import FAISS, but don't fail if it's not available
+try:
+    import faiss
+    import numpy as np
+    FAISS_AVAILABLE = True
+except ImportError as e:
+    logger = logging.getLogger(__name__)
+    logger.warning(f"FAISS not available: {e}")
+    FAISS_AVAILABLE = False
+    faiss = None
+    np = None
 
 from .config import FAISS_PATH, get_embedding_dimension
 from .embed import load_embeddings, validate_embeddings
@@ -19,6 +29,9 @@ _chunk_map: Dict[int, Tuple[int, int, int]] = {}  # chunk_id -> (episode_id, sta
 
 def build_faiss_index(embeddings: np.ndarray, chunk_ids: List[int]) -> None:
     """Build and save FAISS index from embeddings."""
+    if not FAISS_AVAILABLE:
+        logger.warning("FAISS not available, skipping index build")
+        return
     global _index, _chunk_map
     
     if not validate_embeddings(embeddings, chunk_ids):
@@ -45,6 +58,9 @@ def build_faiss_index(embeddings: np.ndarray, chunk_ids: List[int]) -> None:
 
 def load_faiss_index() -> bool:
     """Load FAISS index from disk."""
+    if not FAISS_AVAILABLE:
+        logger.warning("FAISS not available, cannot load index")
+        return False
     global _index, _chunk_map
     
     try:
@@ -72,27 +88,34 @@ def _build_chunk_map(chunk_ids: List[int]) -> None:
     global _chunk_map
     _chunk_map.clear()
     
+    # Use the database instance to get chunk data
+    from .config import SQLITE_PATH
+    import sqlite3
+    
     for idx, chunk_id in enumerate(chunk_ids):
-        # Get chunk from database
-        with db.db_path.open('rb') as f:
-            import sqlite3
-            conn = sqlite3.connect(str(db.db_path))
-            cursor = conn.execute(
-                "SELECT episode_id, start, end FROM chunks WHERE id = ?",
-                (chunk_id,)
-            )
-            result = cursor.fetchone()
-            conn.close()
-            
-            if result:
-                episode_id, start, end = result
-                _chunk_map[idx] = (episode_id, start, end)
+        try:
+            with sqlite3.connect(str(SQLITE_PATH), timeout=30) as conn:
+                cursor = conn.execute(
+                    "SELECT episode_id, start, end FROM chunks WHERE id = ?",
+                    (chunk_id,)
+                )
+                result = cursor.fetchone()
+                
+                if result:
+                    episode_id, start, end = result
+                    _chunk_map[idx] = (episode_id, start, end)
+        except Exception as e:
+            logger.warning(f"Failed to load chunk {chunk_id}: {e}")
+            continue
     
     logger.debug(f"Built chunk map with {len(_chunk_map)} entries")
 
 
 def semantic_search(query_embedding: np.ndarray, top_k: int = 10) -> List[Tuple[int, float]]:
     """Perform semantic search using FAISS."""
+    if not FAISS_AVAILABLE:
+        logger.warning("FAISS not available, returning empty results")
+        return []
     global _index
     
     if _index is None:
