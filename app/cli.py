@@ -320,6 +320,49 @@ def migrate(from_sqlite: str | None, to_url: str | None):
         conn.close()
 
 
+@cli.command(name="rebuild-index")
+def rebuild_index():
+    """Rebuild embeddings and FAISS index from existing database data."""
+    logger.info("Rebuilding embeddings and search index from database...")
+    
+    try:
+        # Get all chunks from database
+        logger.info("Retrieving chunks from database...")
+        all_chunks = []
+        chunk_ids = []
+        
+        for chunk, episode in db.get_all_chunks():
+            all_chunks.append(chunk)
+            chunk_ids.append(chunk.id)
+        
+        logger.info(f"Found {len(all_chunks)} chunks in database")
+        
+        if not all_chunks:
+            logger.error("No chunks found in database")
+            return
+        
+        # Generate embeddings
+        logger.info("Generating embeddings...")
+        embeddings = embed_chunks(all_chunks)
+        
+        # Save embeddings
+        logger.info("Saving embeddings...")
+        save_embeddings(embeddings, chunk_ids)
+        
+        # Build FAISS index
+        logger.info("Building search index...")
+        build_faiss_index(embeddings, chunk_ids)
+        
+        logger.info("Rebuild completed successfully!")
+        logger.info(f"Episodes: {db.get_episode_count()}")
+        logger.info(f"Chunks: {db.get_chunk_count()}")
+        logger.info(f"Embeddings shape: {embeddings.shape}")
+        
+    except Exception as e:
+        logger.error(f"Rebuild failed: {e}")
+        raise
+
+
 @cli.command(name="db-info")
 def db_info():
     """Show effective database connection info and tables."""
