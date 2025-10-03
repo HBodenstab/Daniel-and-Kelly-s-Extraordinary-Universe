@@ -219,10 +219,6 @@ def clear():
             logger.error(f"Failed to clear data: {e}")
 
 
-if __name__ == '__main__':
-    cli()
-
-
 @cli.command()
 @click.option('--from-sqlite', 'from_sqlite', default=None, help='Path to source SQLite file (defaults to local data store)')
 @click.option('--to-url', 'to_url', default=None, help='Destination DATABASE_URL (defaults to env DATABASE_URL)')
@@ -350,3 +346,7 @@ def db_info():
     except Exception as e:
         logger.error(f"db-info failed: {e}")
         raise
+
+
+if __name__ == '__main__':
+    cli()
