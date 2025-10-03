@@ -3,25 +3,31 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Daniel & Kelly's Extraordinary Universe - Search</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <title>Daniel & Kelly's Extraordinary Universe</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Merriweather:wght@300;400;700&display=swap" rel="stylesheet">
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Cdefs%3E%3CradialGradient id='g' cx='50%25' cy='50%25' r='60%25'%3E%3Cstop offset='0%25' stop-color='%2300E6FF'/%3E%3Cstop offset='100%25' stop-color='%230B1D3A'/%3E%3C/radialGradient%3E%3C/defs%3E%3Ccircle cx='32' cy='32' r='30' fill='url(%23g)'/%3E%3Cpath d='M14 34c10-2 26-2 36 0M22 22l-4-6m6 4l-6 4M46 46l6 4m-4-6l4-6' stroke='%23FFFFFF' stroke-width='2' stroke-linecap='round' fill='none' opacity='.7'/%3E%3C/svg%3E">
     <style>
         :root {
-            --primary-color: #2563eb;
-            --primary-hover: #1d4ed8;
-            --primary-light: #dbeafe;
-            --secondary-color: #64748b;
-            --success-color: #10b981;
+            /* Brand palette */
+            --primary-color: #00E6FF; /* Electric Cyan */
+            --primary-hover: #00c4da;
+            --accent-violet: #7A4FFF; /* Cosmic Violet */
+            --primary-light: rgba(0,230,255,0.15);
+            --background: #0B1D3A; /* Deep Space Navy */
+            --background-soft: #0f2448;
+            --surface: #0f2448;
+            --surface-elevated: #132a52;
+            --surface-contrast: #ffffff;
+            --text-primary: #ffffff;
+            --text-secondary: #c5d0ea;
+            --text-muted: #8ba1c7;
+            --border: #1e3a6b;
+            --border-light: #254476;
+            --success-color: #16c79a;
             --warning-color: #f59e0b;
             --error-color: #ef4444;
-            --background: #f8fafc;
-            --surface: #ffffff;
-            --surface-elevated: #ffffff;
-            --text-primary: #0f172a;
-            --text-secondary: #64748b;
-            --text-muted: #94a3b8;
-            --border: #e2e8f0;
-            --border-light: #f1f5f9;
             --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
             --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
             --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
@@ -30,6 +36,8 @@
             --radius-md: 0.5rem;
             --radius-lg: 0.75rem;
             --radius-xl: 1rem;
+            --container-w: 1200px;
+            --grid-gap: 2rem;
         }
 
         * {
@@ -40,17 +48,187 @@
 
         body {
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: var(--background);
+            background: radial-gradient(1200px 600px at 20% -10%, rgba(122,79,255,0.25), transparent 60%),
+                        radial-gradient(1000px 600px at 120% 10%, rgba(0,230,255,0.2), transparent 60%),
+                        var(--background);
             color: var(--text-primary);
             line-height: 1.6;
             min-height: 100vh;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: var(--container-w);
             margin: 0 auto;
             padding: 2rem 1rem;
         }
+
+        /* Navigation */
+        .site-nav {
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: saturate(180%) blur(8px);
+            background: linear-gradient(to bottom, rgba(11,29,58,0.9), rgba(11,29,58,0.6));
+            border-bottom: 1px solid var(--border-light);
+        }
+        .nav-inner {
+            max-width: var(--container-w);
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.75rem 1rem;
+        }
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            color: var(--surface-contrast);
+        }
+        .brand-mark {
+            width: 28px;
+            height: 28px;
+            background: radial-gradient(circle at 30% 30%, var(--primary-color), var(--accent-violet));
+            border-radius: 50%;
+            box-shadow: 0 0 24px rgba(0,230,255,0.35), inset 0 0 24px rgba(122,79,255,0.25);
+        }
+        .brand-name {
+            font-weight: 600;
+            letter-spacing: 0.2px;
+        }
+        .nav-links {
+            display: flex;
+            gap: 1rem;
+        }
+        .nav-links a {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem 0.75rem;
+            border-radius: var(--radius-sm);
+            transition: color 0.2s ease, background 0.2s ease;
+        }
+        .nav-links a:hover, .nav-links a.active {
+            color: var(--surface-contrast);
+            background: rgba(0,230,255,0.08);
+        }
+
+        /* Hero */
+        .hero {
+            position: relative;
+            padding: 5rem 1rem 3rem;
+            overflow: hidden;
+        }
+        .hero .container {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: var(--grid-gap);
+            align-items: center;
+        }
+        .hero-eyebrow {
+            color: var(--primary-color);
+            font-weight: 600;
+            letter-spacing: 0.12em;
+            text-transform: uppercase;
+            font-size: 0.8rem;
+        }
+        .hero h1 {
+            font-size: 3rem;
+            line-height: 1.1;
+            margin: 0.75rem 0 0.75rem;
+            font-weight: 700;
+        }
+        .hero h1 .underline {
+            position: relative;
+            white-space: nowrap;
+        }
+        .hero h1 .underline::after {
+            content: "";
+            position: absolute;
+            left: 0;
+            right: 0;
+            bottom: -6px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--primary-color), var(--accent-violet));
+            box-shadow: 0 0 16px rgba(0,230,255,0.6);
+            transform-origin: left;
+            transform: scaleX(0);
+            transition: transform 800ms cubic-bezier(.2,.8,.2,1);
+        }
+        .hero.ready h1 .underline::after { transform: scaleX(1); }
+        .hero-sub {
+            font-family: 'Merriweather', Georgia, serif;
+            font-weight: 300;
+            color: var(--text-secondary);
+            font-size: 1.125rem;
+            max-width: 50ch;
+        }
+        .hero-ctas {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+        .btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.875rem 1.25rem;
+            border-radius: 999px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease;
+            will-change: transform;
+        }
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--accent-violet));
+            color: #001018;
+            box-shadow: 0 10px 30px rgba(0,230,255,0.25);
+        }
+        .btn-primary:hover { transform: translateY(-1px); }
+        .btn-secondary {
+            color: var(--surface-contrast);
+            border: 1px solid var(--border-light);
+            background: rgba(255,255,255,0.04);
+        }
+        .btn-secondary:hover { background: rgba(255,255,255,0.07); }
+        .hero-visual {
+            position: relative;
+            height: 420px;
+            border-radius: var(--radius-xl);
+            border: 1px solid var(--border-light);
+            background:
+                radial-gradient(650px 240px at 70% 30%, rgba(0,230,255,0.15), transparent 60%),
+                radial-gradient(800px 400px at 30% 70%, rgba(122,79,255,0.18), transparent 60%),
+                linear-gradient(180deg, rgba(19,42,82,0.6), rgba(19,42,82,0.6));
+            overflow: hidden;
+            box-shadow: var(--shadow-lg);
+        }
+        canvas.starfield {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0.6;
+        }
+        .hero-caption {
+            position: absolute;
+            bottom: 0.75rem;
+            left: 0.75rem;
+            font-size: 0.75rem;
+            color: var(--text-muted);
+        }
+
+        .section {
+            padding: 4rem 1rem;
+        }
+        .section .container { max-width: var(--container-w); }
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+        .section-sub { color: var(--text-secondary); }
 
         .header {
             text-align: center;
@@ -216,7 +394,10 @@
         }
 
         .result-item {
-            padding: 1.5rem 2rem;
+            display: grid;
+            grid-template-columns: 88px 1fr;
+            gap: 1rem;
+            padding: 1.25rem 1.5rem;
             border-bottom: 1px solid var(--border-light);
             transition: background-color 0.2s ease;
         }
@@ -239,7 +420,7 @@
         .result-title {
             font-size: 1.125rem;
             font-weight: 600;
-            color: var(--primary-color);
+            color: var(--surface-contrast);
             text-decoration: none;
             line-height: 1.4;
             flex: 1;
@@ -251,13 +432,52 @@
         }
 
         .result-score {
-            background: var(--primary-light);
+            background: rgba(0,230,255,0.1);
             color: var(--primary-color);
-            padding: 0.25rem 0.75rem;
+            padding: 0.25rem 0.5rem;
             border-radius: var(--radius-sm);
             font-size: 0.75rem;
-            font-weight: 500;
+            font-weight: 600;
             white-space: nowrap;
+            border: 1px solid rgba(0,230,255,0.25);
+        }
+
+        .result-thumb {
+            width: 88px;
+            height: 88px;
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--border-light);
+            background: linear-gradient(135deg, rgba(0,230,255,0.25), rgba(122,79,255,0.25));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--surface-contrast);
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        /* How it works */
+        .hiw-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: var(--grid-gap);
+            margin-top: 2rem;
+        }
+        .hiw-card {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1rem;
+        }
+        .hiw-card h4 { margin-bottom: 0.25rem; }
+        .hiw-card p { color: var(--text-secondary); font-size: 0.95rem; }
+
+        /* Footer */
+        .site-footer {
+            padding: 2rem 1rem;
+            border-top: 1px solid var(--border-light);
+            color: var(--text-secondary);
+            background: rgba(0,0,0,0.15);
         }
 
         .result-meta {
@@ -387,9 +607,7 @@
                 text-align: center;
             }
 
-            .result-item {
-                padding: 1rem 1.5rem;
-            }
+            .result-item { grid-template-columns: 64px 1fr; padding: 1rem 1rem; }
 
             .result-header {
                 flex-direction: column;
@@ -418,13 +636,74 @@
     </style>
 </head>
 <body>
-    <div class="container">
-        <div class="header">
-            <h1>🎧 Daniel & Kelly's Extraordinary Universe</h1>
-            <p>Discover insights from science, philosophy, and the extraordinary</p>
+    <header class="site-nav">
+        <div class="nav-inner">
+            <a href="#top" class="brand">
+                <span class="brand-mark" aria-hidden="true"></span>
+                <span class="brand-name">Extraordinary Universe</span>
+            </a>
+            <nav class="nav-links" aria-label="Primary">
+                <a href="#about">About</a>
+                <a href="#episodes">Episodes</a>
+                <a href="#search">Search</a>
+                <a href="#contact">Contact</a>
+            </nav>
         </div>
+    </header>
 
-        <div class="search-container">
+    <section class="hero" id="top" aria-label="Hero">
+        <div class="container">
+            <div>
+                <div class="hero-eyebrow">Daniel & Kelly’s Extraordinary Universe</div>
+                <h1>
+                    <span class="underline">Exploring Imagination</span> in the Age of AI
+                </h1>
+                <p class="hero-sub">Stories, voices, and ideas—searchable, connected, alive in a universe without boundaries.</p>
+                <div class="hero-ctas">
+                    <a class="btn btn-primary" href="#search">Search the Universe</a>
+                    <a class="btn btn-secondary" href="#episodes">Discover Episodes</a>
+                </div>
+            </div>
+            <div class="hero-visual" aria-hidden="true">
+                <canvas class="starfield"></canvas>
+                <div class="hero-caption">AI + audio search engine • Local-first • Hybrid scoring</div>
+            </div>
+        </div>
+    </section>
+
+    <section class="section" id="about" aria-label="About">
+        <div class="container">
+            <h3 class="section-title">About</h3>
+            <p class="section-sub">Daniel & Kelly’s Extraordinary Universe explores the future of AI and human imagination—through stories, voices, and ideas that connect us all.</p>
+        </div>
+    </section>
+
+    <section class="section" id="how" aria-label="How It Works">
+        <div class="container">
+            <h3 class="section-title">How it Works</h3>
+            <p class="section-sub">From RSS to insight: a precise pipeline for turning conversations into a searchable universe.</p>
+            <div class="hiw-grid">
+                <div class="hiw-card">
+                    <h4>1. Ingest</h4>
+                    <p>Fetch RSS, parse episode pages, extract transcripts and metadata.</p>
+                </div>
+                <div class="hiw-card">
+                    <h4>2. Chunk</h4>
+                    <p>Split transcripts into overlapping segments for semantic precision.</p>
+                </div>
+                <div class="hiw-card">
+                    <h4>3. Embed</h4>
+                    <p>Generate vector embeddings and build a FAISS index.</p>
+                </div>
+                <div class="hiw-card">
+                    <h4>4. Search</h4>
+                    <p>Hybrid semantic + lexical retrieval, then rank for relevance.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+        <div class="search-container" id="episodes">
             <div class="stats-card" id="stats">
                 <div class="stat-item">
                     <div class="stat-value" id="episodeCount">-</div>
@@ -469,6 +748,24 @@
         </div>
     </div>
 
+    <section class="section" id="vision" aria-label="Future Vision">
+        <div class="container">
+            <h3 class="section-title">Future Vision</h3>
+            <p class="section-sub">From a podcast search to a living library of ideas: episode browser, AI summaries, curated themes, and collaborative annotations—built for listeners, researchers, and partners.</p>
+        </div>
+    </section>
+
+    <footer class="site-footer" id="contact" aria-label="Footer">
+        <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
+            <div>© <span id="year"></span> Extraordinary Universe</div>
+            <div style="display:flex;gap:1rem;">
+                <a href="#about" class="nav-link">About</a>
+                <a href="#episodes" class="nav-link">Episodes</a>
+                <a href="#search" class="nav-link">Search</a>
+            </div>
+        </div>
+    </footer>
+
     <script>
         // Global state
         let isLoading = false;
@@ -477,9 +774,23 @@
         document.addEventListener('DOMContentLoaded', function() {
             loadStats();
             setupEventListeners();
+            setupScroll();
+            setupHero();
+            setupStarfield();
+            const y = document.getElementById('year'); if (y) y.textContent = new Date().getFullYear();
         });
 
         function setupEventListeners() {
+            // Smooth scroll for nav and buttons
+            document.querySelectorAll('.nav-links a, .btn').forEach(a => {
+                a.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#')) {
+                        e.preventDefault();
+                        document.querySelector(href)?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
+            });
             // Search form submission
             document.getElementById('searchForm').addEventListener('submit', async (e) => {
                 e.preventDefault();
@@ -509,6 +820,58 @@
                     }
                 }
             });
+        }
+
+        function setupScroll() {
+            const links = document.querySelectorAll('.nav-links a');
+            const sections = Array.from(links).map(l => document.querySelector(l.getAttribute('href'))).filter(Boolean);
+            const observer = new IntersectionObserver(entries => {
+                entries.forEach(entry => {
+                    const id = '#' + entry.target.id;
+                    const link = Array.from(links).find(l => l.getAttribute('href') === id);
+                    if (link) {
+                        if (entry.isIntersecting) {
+                            links.forEach(l => l.classList.remove('active'));
+                            link.classList.add('active');
+                        }
+                    }
+                });
+            }, { rootMargin: '-45% 0px -50% 0px', threshold: 0.01 });
+            sections.forEach(s => observer.observe(s));
+        }
+
+        function setupHero() {
+            const hero = document.querySelector('.hero');
+            if (hero) requestAnimationFrame(() => hero.classList.add('ready'));
+        }
+
+        function setupStarfield() {
+            const canvas = document.querySelector('canvas.starfield');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            let w, h, stars;
+            function resize() {
+                w = canvas.width = canvas.offsetWidth;
+                h = canvas.height = canvas.offsetHeight;
+                stars = Array.from({ length: Math.max(80, Math.floor(w * h / 12000)) }, () => ({
+                    x: Math.random() * w,
+                    y: Math.random() * h,
+                    z: Math.random() * 0.8 + 0.2,
+                    r: Math.random() * 1.8 + 0.2
+                }));
+            }
+            function tick() {
+                ctx.clearRect(0, 0, w, h);
+                ctx.fillStyle = 'rgba(255,255,255,0.85)';
+                stars.forEach(s => {
+                    s.x += 0.08 * s.z; if (s.x > w) s.x = 0;
+                    ctx.beginPath(); ctx.arc(s.x, s.y, s.r * s.z, 0, Math.PI * 2); ctx.fill();
+                });
+                requestAnimationFrame(tick);
+            }
+            resize();
+            tick();
+            window.addEventListener('resize', resize);
         }
 
         async function loadStats() {
@@ -625,24 +988,27 @@
             
             const resultsHtml = data.results.map((result, index) => `
                 <div class="result-item">
-                    <div class="result-header">
-                        <a href="${result.link}" target="_blank" class="result-title">
-                            ${result.title}
-                        </a>
-                        <div class="result-score">
-                            ${(result.score * 100).toFixed(1)}%
+                    <div class="result-thumb" aria-hidden="true">${(result.title || 'E').slice(0,1)}</div>
+                    <div>
+                        <div class="result-header">
+                            <a href="${result.link}" target="_blank" class="result-title">
+                                ${result.title}
+                            </a>
+                            <div class="result-score">
+                                ${(result.score * 100).toFixed(1)}%
+                            </div>
                         </div>
-                    </div>
-                    <div class="result-meta">
-                        <div class="result-date">
-                            <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
-                            </svg>
-                            ${result.pub_date || 'Date not available'}
+                        <div class="result-meta">
+                            <div class="result-date">
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"></path>
+                                </svg>
+                                ${result.pub_date || 'Date not available'}
+                            </div>
                         </div>
-                    </div>
-                    <div class="result-snippet">
-                        ${highlightQueryTerms(result.snippet, query)}
+                        <div class="result-snippet">
+                            ${highlightQueryTerms(result.snippet, query)}
+                        </div>
                     </div>
                 </div>
             `).join('');
