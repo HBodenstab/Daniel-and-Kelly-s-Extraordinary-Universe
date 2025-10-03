@@ -106,7 +106,14 @@ async def search(request: SearchRequestModel):
         
         # Use lexical search for fast results (FAISS index too large for quick loading)
         logger.info("Using lexical search for fast results")
-        results = lexical_search_episodes(query, request.top_k)
+        logger.info(f"Searching for: '{query}' with top_k: {request.top_k}")
+        
+        try:
+            results = lexical_search_episodes(query, request.top_k)
+            logger.info(f"Lexical search returned {len(results)} results")
+        except Exception as e:
+            logger.error(f"Lexical search failed: {e}")
+            results = []
         
         # Convert to API response format
         api_results = []
@@ -130,6 +137,66 @@ async def search(request: SearchRequestModel):
         
     except Exception as e:
         logger.error(f"Search error: {e}")
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/episodes")
+async def episodes_page(page: int = 1, limit: int = 20):
+    """Browse episodes page."""
+    try:
+        # Calculate offset for pagination
+        offset = (page - 1) * limit
+        
+        # Get episodes from database
+        episodes = []
+        total_count = db.get_episode_count()
+        
+        with db.SessionLocal() as session:
+            episode_models = session.query(db.EpisodeModel).order_by(
+                db.EpisodeModel.pub_date.desc()
+            ).offset(offset).limit(limit).all()
+            
+            for ep in episode_models:
+                episodes.append({
+                    "id": ep.id,
+                    "title": ep.title,
+                    "link": ep.link,
+                    "pub_date": ep.pub_date.isoformat() if ep.pub_date else None,
+                    "description": ep.description[:200] + "..." if ep.description and len(ep.description) > 200 else ep.description
+                })
+        
+        # Calculate pagination info
+        total_pages = (total_count + limit - 1) // limit
+        has_prev = page > 1
+        has_next = page < total_pages
+        
+        # Read and serve the episodes HTML page
+        html_file = Path(__file__).parent / "ui" / "episodes.html"
+        if not html_file.exists():
+            raise HTTPException(status_code=404, detail="Episodes page not found")
+        
+        with open(html_file, 'r') as f:
+            content = f.read()
+        
+        # Replace placeholder data with actual episodes
+        episodes_json = json.dumps(episodes)
+        pagination_info = json.dumps({
+            "page": page,
+            "total_pages": total_pages,
+            "total_count": total_count,
+            "has_prev": has_prev,
+            "has_next": has_next,
+            "prev_page": page - 1 if has_prev else None,
+            "next_page": page + 1 if has_next else None
+        })
+        
+        content = content.replace('{{EPISODES}}', episodes_json)
+        content = content.replace('{{PAGINATION}}', pagination_info)
+        
+        return HTMLResponse(content=content)
+        
+    except Exception as e:
+        logger.error(f"Error serving episodes page: {e}")
         raise HTTPException(status_code=500, detail=str(e))
 
 
