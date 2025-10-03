@@ -133,7 +133,7 @@
             color: var(--primary-color);
             font-family: 'Inter', sans-serif;
             font-weight: 600;
-            letter-spacing: 0.12em;
+            letter-spacing: 0.15em;
             text-transform: uppercase;
             font-size: 0.875rem;
             margin-bottom: 1rem;
@@ -142,13 +142,16 @@
         }
         .hero h1 {
             font-family: 'Inter', sans-serif;
-            font-size: 4rem;
+            font-size: 4.5rem;
             line-height: 1.1;
-            margin-bottom: 1.5rem;
+            margin-bottom: 2rem;
             font-weight: 700;
             letter-spacing: -0.02em;
             opacity: 0;
             animation: fadeInUp 1s ease 0.7s forwards;
+            max-width: 14ch;
+            margin-left: auto;
+            margin-right: auto;
         }
         .hero h1 .underline {
             position: relative;
@@ -170,11 +173,11 @@
         .hero.ready h1 .underline::after { transform: scaleX(1); }
         .hero-sub {
             font-family: 'Merriweather', Georgia, serif;
-            font-weight: 300;
+            font-weight: 400;
             color: var(--text-secondary);
             font-size: 1.375rem;
-            line-height: 1.6;
-            max-width: 65ch;
+            line-height: 1.5;
+            max-width: 700px;
             margin: 0 auto 2.5rem;
             opacity: 0;
             animation: fadeInUp 1s ease 0.9s forwards;
@@ -194,7 +197,7 @@
             display: flex;
             gap: 1.5rem;
             justify-content: center;
-            margin-top: 2rem;
+            margin-top: 2.5rem;
             opacity: 0;
             animation: fadeInUp 1s ease 1.1s forwards;
         }
@@ -206,9 +209,10 @@
         .btn {
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 0.5rem;
-            padding: 1rem 2rem;
-            border-radius: 999px;
+            padding: 1.25rem 2.5rem;
+            border-radius: 12px;
             text-decoration: none;
             font-family: 'Inter', sans-serif;
             font-weight: 600;
@@ -217,6 +221,8 @@
             will-change: transform;
             position: relative;
             overflow: hidden;
+            min-width: 200px;
+            height: 56px;
         }
         .btn-primary {
             background: linear-gradient(135deg, var(--primary-color), var(--accent-violet));
@@ -236,37 +242,138 @@
             background: rgba(0,230,255,0.1);
             box-shadow: 0 0 20px rgba(0,230,255,0.3);
         }
-        .hero-search {
-            margin-top: 3rem;
+        .hero-search-box {
+            margin-top: 1.5rem;
             opacity: 0;
             animation: fadeInUp 1s ease 1.3s forwards;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
         }
-        .hero-search-input {
-            width: 100%;
-            max-width: 500px;
-            margin: 0 auto;
-            position: relative;
+        
+        .hero-search-box .stats-card {
+            background: var(--surface);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            text-align: center;
+            box-shadow: var(--shadow-md);
         }
-        .hero-search-input input {
-            width: 100%;
-            padding: 1.25rem 1.5rem;
-            border: 2px solid var(--border-light);
-            border-radius: 999px;
-            background: rgba(255,255,255,0.05);
-            color: var(--surface-contrast);
-            font-size: 1.125rem;
+        
+        .hero-search-box .stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .hero-search-box .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--primary-color);
             font-family: 'Inter', sans-serif;
-            backdrop-filter: blur(10px);
+        }
+        
+        .hero-search-box .stat-label {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+        
+        .hero-search-box .stat-status {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.25rem;
+        }
+        
+        .hero-search-box .status-icon {
+            font-size: 1.5rem;
+            color: #ff9500;
+        }
+        
+        .hero-search-box .status-text {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #ff9500;
+            font-family: 'Inter', sans-serif;
+        }
+        
+        .hero-search-form {
+            display: flex;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+        }
+        
+        .hero-search-form input {
+            flex: 1;
+            padding: 1rem 1.25rem;
+            border: 2px solid var(--border-light);
+            border-radius: var(--radius-md);
+            background: var(--surface);
+            color: var(--text-primary);
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
             transition: all 0.3s ease;
         }
-        .hero-search-input input:focus {
+        
+        .hero-search-form input:focus {
             outline: none;
             border-color: var(--primary-color);
-            box-shadow: 0 0 30px rgba(0,230,255,0.3);
-            background: rgba(255,255,255,0.08);
+            box-shadow: 0 0 20px rgba(0,230,255,0.2);
         }
-        .hero-search-input input::placeholder {
+        
+        .hero-search-form input::placeholder {
             color: var(--text-muted);
+        }
+        
+        .hero-search-form .search-button {
+            padding: 1rem 1.5rem;
+            background: var(--primary-color);
+            color: #001018;
+            border: none;
+            border-radius: var(--radius-md);
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+        
+        .hero-search-form .search-button:hover {
+            background: var(--accent-violet);
+            transform: translateY(-1px);
+        }
+        
+        .hero-search-box .search-suggestions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: center;
+        }
+        
+        .hero-search-box .suggestion-tag {
+            padding: 0.5rem 1rem;
+            background: var(--background);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-full);
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .hero-search-box .suggestion-tag:hover {
+            background: var(--primary-color);
+            color: #001018;
+            border-color: var(--primary-color);
         }
         canvas.starfield {
             position: absolute;
@@ -649,11 +756,13 @@
         /* Responsive Design */
         @media (max-width: 768px) {
             .hero h1 {
-                font-size: 2.5rem;
+                font-size: 3rem;
+                max-width: none;
             }
             
             .hero-sub {
                 font-size: 1.125rem;
+                max-width: 90%;
             }
             
             .hero-ctas {
@@ -665,6 +774,23 @@
             .btn {
                 width: 100%;
                 max-width: 280px;
+            }
+            
+            .hero-search-box {
+                max-width: 90%;
+            }
+            
+            .hero-search-box .stats-card {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+            
+            .hero-search-form {
+                flex-direction: column;
+            }
+            
+            .hero-search-box .search-suggestions {
+                justify-content: flex-start;
             }
             
             .section {
@@ -698,7 +824,11 @@
         
         @media (max-width: 480px) {
             .hero h1 {
-                font-size: 2rem;
+                font-size: 2.25rem;
+            }
+            
+            .hero-sub {
+                font-size: 1rem;
             }
             
             .section-title {
@@ -742,14 +872,42 @@
                 <h1>
                     <span class="underline">Search Daniel & Kelly's Universe</span>—without getting lost in it.
                 </h1>
-                <p class="hero-sub">Hundreds of conversations, neatly searchable. From cosmic theories to petty debates (like whether white chocolate is even real chocolate).</p>
+                <p class="hero-sub">Find any episode fast. From black holes to white chocolate rants, it's all here—without the chaos of scrolling forever.</p>
                 <div class="hero-ctas">
                     <a class="btn btn-primary" href="#search">Search the Universe</a>
     </div>
 
-                <div class="hero-search">
-                    <div class="hero-search-input">
+                <div class="hero-search-box">
+                    <div class="stats-card" id="heroStats">
+                        <div class="stat-item">
+                            <div class="stat-value" id="heroEpisodeCount">-</div>
+                            <div class="stat-label">Episodes</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-value" id="heroChunkCount">-</div>
+                            <div class="stat-label">Chunks</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-status" id="heroIndexStatus">
+                                <span class="status-icon">⚠</span>
+                                <span class="status-text">Loading</span>
+                                <div class="stat-label">Index Status</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="hero-search-form">
                         <input type="text" placeholder="Search for topics like 'relativity', 'time dilation', 'quantum mechanics'..." id="heroSearchInput">
+                        <button type="button" class="search-button">Search</button>
+                    </div>
+                    
+                    <div class="search-suggestions">
+                        <div class="suggestion-tag" data-query="relativity">relativity</div>
+                        <div class="suggestion-tag" data-query="quantum mechanics">quantum mechanics</div>
+                        <div class="suggestion-tag" data-query="time dilation">time dilation</div>
+                        <div class="suggestion-tag" data-query="consciousness">consciousness</div>
+                        <div class="suggestion-tag" data-query="black holes">black holes</div>
+                        <div class="suggestion-tag" data-query="multiverse">multiverse</div>
                     </div>
                 </div>
             </div>
@@ -813,12 +971,6 @@
         </div>
     </div>
 
-    <section class="section" id="vision" aria-label="Future Vision">
-        <div class="container">
-            <h3 class="section-title">Future Vision</h3>
-            <p class="section-sub">From a podcast search to a living library of ideas: episode browser, AI summaries, curated themes, and collaborative annotations—built for listeners, researchers, and partners.</p>
-        </div>
-    </section>
 
     <footer class="site-footer" aria-label="Footer">
         <div class="container" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;">
@@ -894,8 +1046,10 @@
                 }
             });
             
-            // Hero search input
+            // Hero search input and button
             const heroSearchInput = document.getElementById('heroSearchInput');
+            const heroSearchButton = document.querySelector('.hero-search-form .search-button');
+            
             if (heroSearchInput) {
                 heroSearchInput.addEventListener('keydown', function(e) {
                     if (e.key === 'Enter' && !isLoading) {
@@ -909,6 +1063,30 @@
                     }
                 });
             }
+            
+            if (heroSearchButton) {
+                heroSearchButton.addEventListener('click', function() {
+                    const query = heroSearchInput.value.trim();
+                    if (query && !isLoading) {
+                        document.getElementById('queryInput').value = query;
+                        document.querySelector('#search')?.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(() => performSearch(query), 500);
+                    }
+                });
+            }
+            
+            // Hero suggestion tags
+            document.querySelectorAll('.hero-search-box .suggestion-tag').forEach(tag => {
+                tag.addEventListener('click', function() {
+                    const query = this.getAttribute('data-query');
+                    if (query && !isLoading) {
+                        heroSearchInput.value = query;
+                        document.getElementById('queryInput').value = query;
+                        document.querySelector('#search')?.scrollIntoView({ behavior: 'smooth' });
+                        setTimeout(() => performSearch(query), 500);
+                    }
+                });
+            });
         }
 
         function setupScroll() {
@@ -968,9 +1146,22 @@
                 const response = await fetch('/api/stats');
                 const stats = await response.json();
                 
+                // Main stats
                 document.getElementById('episodeCount').textContent = stats.episodes || 0;
                 document.getElementById('chunkCount').textContent = stats.chunks || 0;
                 document.getElementById('indexStatus').textContent = stats.index_loaded ? '✓ Ready' : '⚠ Loading';
+                
+                // Hero stats
+                const heroEpisodeCount = document.getElementById('heroEpisodeCount');
+                const heroChunkCount = document.getElementById('heroChunkCount');
+                const heroIndexStatus = document.getElementById('heroIndexStatus');
+                
+                if (heroEpisodeCount) heroEpisodeCount.textContent = stats.episodes || 0;
+                if (heroChunkCount) heroChunkCount.textContent = stats.chunks || 0;
+                if (heroIndexStatus) {
+                    const statusText = heroIndexStatus.querySelector('.status-text');
+                    if (statusText) statusText.textContent = stats.index_loaded ? 'Ready' : 'Loading';
+                }
                 
                 // Update index status styling
                 const indexStatus = document.getElementById('indexStatus');
