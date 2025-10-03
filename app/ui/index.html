@@ -32,10 +32,86 @@
         .topic-chips a{display:inline-block;padding:10px 14px;border-radius:999px;border:1px solid rgba(255,255,255,.2);color:#E5EEF9;text-decoration:none}
         .site-footer{max-width:72rem;margin:0 auto;padding:32px 24px;border-top:1px solid rgba(255,255,255,.08);display:flex;justify-content:space-between;color:#cbd5e1}
         @media (max-width:700px){.nav{display:none}.cta-row{flex-direction:column}}
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        /* Animation classes */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInFromLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-delay-1 { animation-delay: 0.2s; }
+        .animate-delay-2 { animation-delay: 0.4s; }
+        .animate-delay-3 { animation-delay: 0.6s; }
+        .animate-delay-4 { animation-delay: 0.8s; }
+        
+        /* Hover animations */
+        .nav a:hover{transform:translateY(-1px)}
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(96,165,250,.3);
+        }
+        
+        .hero-search input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(96,165,250,.2);
+        }
+        
+        .topic-chips a:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(96,165,250,.2);
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
     </style>
 </head>
 <body>
-    <header class="site-header">
+    <header class="site-header animate-slide-in-left">
         <a class="brand" href="/">Extraordinary Universe</a>
         <nav class="nav">
             <a href="/search">Search</a>
@@ -43,27 +119,27 @@
     </header>
 
     <section class="hero">
-        <p class="eyebrow">DANIEL & KELLY'S EXTRAORDINARY UNIVERSE</p>
-        <h1>Search the Universe—Daniel & Kelly style</h1>
-        <p class="subhead">Find any episode fast. From black holes to white chocolate rants, it's all here—without the chaos of scrolling forever.</p>
-        <div class="cta-row">
+        <p class="eyebrow animate-fade-in-up animate-delay-1">DANIEL & KELLY'S EXTRAORDINARY UNIVERSE</p>
+        <h1 class="animate-fade-in-up animate-delay-2">Search the Universe—Daniel & Kelly style</h1>
+        <p class="subhead animate-fade-in-up animate-delay-3">Find any episode fast. From black holes to white chocolate rants, it's all here—without the chaos of scrolling forever.</p>
+        <div class="cta-row animate-fade-in-up animate-delay-4">
             <a class="btn btn-primary" href="/search">Search the Universe</a>
         </div>
-        <form class="hero-search" action="/search">
+        <form class="hero-search animate-fade-in-up animate-delay-4" action="/search">
             <input name="q" placeholder="Try 'relativity', 'time dilation', 'white chocolate'…"/>
             <button type="submit">Search</button>
         </form>
     </section>
 
-    <section class="explore">
+    <section class="explore animate-fade-in-up">
         <h2>Explore Topics</h2>
         <ul class="topic-chips">
-            <li><a href="/search?q=relativity">relativity</a></li>
-            <li><a href="/search?q=quantum%20mechanics">quantum mechanics</a></li>
-            <li><a href="/search?q=time%20dilation">time dilation</a></li>
-            <li><a href="/search?q=consciousness">consciousness</a></li>
-            <li><a href="/search?q=black%20holes">black holes</a></li>
-            <li><a href="/search?q=multiverse">multiverse</a></li>
+            <li><a href="/search?q=relativity" class="animate-fade-in-up animate-delay-1">relativity</a></li>
+            <li><a href="/search?q=quantum%20mechanics" class="animate-fade-in-up animate-delay-2">quantum mechanics</a></li>
+            <li><a href="/search?q=time%20dilation" class="animate-fade-in-up animate-delay-3">time dilation</a></li>
+            <li><a href="/search?q=consciousness" class="animate-fade-in-up animate-delay-4">consciousness</a></li>
+            <li><a href="/search?q=black%20holes" class="animate-fade-in-up animate-delay-4">black holes</a></li>
+            <li><a href="/search?q=multiverse" class="animate-fade-in-up animate-delay-4">multiverse</a></li>
         </ul>
     </section>
 

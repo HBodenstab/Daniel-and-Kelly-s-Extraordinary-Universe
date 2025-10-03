@@ -14,8 +14,77 @@
         .site-header{max-width:72rem;margin:0 auto;display:flex;align-items:center;justify-content:space-between;padding:24px}
         .brand{font-weight:700;letter-spacing:.2px;color:#BBD7FF;text-decoration:none}
         .nav a{color:#CFE6FF;text-decoration:none;margin-left:16px;opacity:.9}
-        .nav a:hover{opacity:1;color:#00E6FF}
+        .nav a:hover{opacity:1;color:#00E6FF;transform:translateY(-1px)}
         .search-container{max-width:72rem;margin:0 auto;padding:32px 24px}
+        
+        /* Animations */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        
+        @keyframes slideInFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        
+        /* Animation classes */
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-slide-in-left {
+            animation: slideInFromLeft 0.6s ease-out forwards;
+            opacity: 0;
+        }
+        
+        .animate-delay-1 { animation-delay: 0.2s; }
+        .animate-delay-2 { animation-delay: 0.4s; }
+        .animate-delay-3 { animation-delay: 0.6s; }
+        
+        /* Hover animations */
+        .search-form button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,230,255,.3);
+        }
+        
+        .search-form input:focus {
+            transform: scale(1.02);
+            box-shadow: 0 0 20px rgba(0,230,255,.2);
+        }
+        
+        .result:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,230,255,.1);
+        }
+        
+        /* Smooth transitions */
+        * {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .search-form{display:flex;gap:8px;margin-bottom:32px;max-width:700px}
         .search-form input{flex:1;padding:14px 16px;border-radius:12px;border:1px solid rgba(255,255,255,.25);background:rgba(6,18,38,.6);color:#fff;font-size:16px}
         .search-form input:focus{border-color:#00E6FF;box-shadow:0 0 0 3px rgba(0,230,255,.25);outline:none}
@@ -36,7 +105,7 @@
     </style>
 </head>
 <body>
-    <header class="site-header">
+    <header class="site-header animate-slide-in-left">
         <a class="brand" href="/">Extraordinary Universe</a>
         <nav class="nav">
             <a href="/episodes">Episodes</a>
@@ -45,8 +114,8 @@
     </header>
 
     <main class="search-container">
-        <h1>Search the Universe</h1>
-        <form class="search-form" id="searchForm">
+        <h1 class="animate-fade-in-up animate-delay-1">Search the Universe</h1>
+        <form class="search-form animate-fade-in-up animate-delay-2" id="searchForm">
             <input type="text" name="query" id="searchInput" placeholder="Try 'relativity', 'time dilation', 'consciousness'..." value="{{query}}" autofocus>
             <button type="submit">Search</button>
         </form>
