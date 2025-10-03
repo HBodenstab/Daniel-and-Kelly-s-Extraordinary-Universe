@@ -17,6 +17,7 @@ from .rank import rank_results, lexical_search_episodes
 from .embed import embed_query, clear_embeddings
 from .index import load_faiss_index, semantic_search, is_index_loaded
 from .config import SQLITE_PATH
+from sqlalchemy import inspect
 
 # Configure logging
 logging.basicConfig(
@@ -321,3 +322,31 @@ def migrate(from_sqlite: str | None, to_url: str | None):
         raise
     finally:
         conn.close()
+
+
+@cli.command(name="db-info")
+def db_info():
+    """Show effective database connection info and tables."""
+    try:
+        engine = db.engine
+        url = engine.url
+        # Mask password if present
+        try:
+            safe_url = url.set(password="***")  # SQLAlchemy 2.x URL
+        except Exception:
+            safe_url = url
+
+        dialect = engine.dialect.name
+        is_sqlite = dialect == "sqlite"
+
+        print("Effective database URL:", str(safe_url))
+        print("Dialect:", dialect)
+        print("Using SQLite fallback:", "yes" if is_sqlite else "no")
+
+        insp = inspect(engine)
+        tables = insp.get_table_names()
+        print("Tables:", ", ".join(tables) if tables else "<none>")
+
+    except Exception as e:
+        logger.error(f"db-info failed: {e}")
+        raise
