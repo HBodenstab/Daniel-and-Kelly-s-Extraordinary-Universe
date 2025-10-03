@@ -1,10 +1,17 @@
-"""Database abstraction layer supporting SQLite and PostgreSQL."""
+"""Database abstraction layer supporting SQLite and PostgreSQL.
+
+This module is resilient to missing/misconfigured PostgreSQL environment variables
+in hosted environments (e.g., Railway). It attempts to construct a proper
+PostgreSQL SQLAlchemy URL from available env vars, ensures SSL is enabled,
+and falls back to SQLite if connection/initialization fails so the API can
+still boot and pass health checks.
+"""
 
 import os
 import logging
 from typing import List, Optional, Iterator, Tuple, Union
 from pathlib import Path
-from urllib.parse import urlparse
+from urllib.parse import urlparse, urlencode, parse_qsl, urlunparse
 
 from sqlalchemy import create_engine, text, Index
 from sqlalchemy.orm import sessionmaker, declarative_base
@@ -61,8 +68,30 @@ class Database:
         self.init_db()
     
     def _get_database_url(self) -> str:
-        """Get database URL from environment or default to SQLite."""
-        return DATABASE_URL
+        """Get database URL from environment or default to SQLite.
+
+        Priority:
+        1) DATABASE_URL (normalize scheme, ensure sslmode)
+        2) Construct from Railway-style env vars (PG*/POSTGRES*)
+        3) Fallback to SQLite
+        """
+        env_url = os.getenv("DATABASE_URL")
+        if env_url:
+            return self._normalize_database_url(env_url)
+
+        # Railway provides PG* variables. Also support POSTGRES_* variants.
+        host = os.getenv("PGHOST") or os.getenv("POSTGRES_HOST")
+        port = os.getenv("PGPORT") or os.getenv("POSTGRES_PORT") or "5432"
+        user = os.getenv("PGUSER") or os.getenv("POSTGRES_USER")
+        password = os.getenv("PGPASSWORD") or os.getenv("POSTGRES_PASSWORD")
+        dbname = os.getenv("PGDATABASE") or os.getenv("POSTGRES_DB")
+
+        if host and user and password and dbname:
+            url = f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{dbname}"
+            return self._ensure_sslmode(url)
+
+        # Fallback to configured default (likely SQLite)
+        return str(DATABASE_URL)
     
     def _create_engine(self):
         """Create SQLAlchemy engine."""
@@ -76,32 +105,85 @@ class Database:
                 self.database_url,
                 pool_size=10,
                 max_overflow=20,
-                pool_pre_ping=True
+                pool_pre_ping=True,
             )
     
     def init_db(self) -> None:
-        """Initialize database schema."""
+        """Initialize database schema. Falls back to SQLite on failure."""
         try:
             Base.metadata.create_all(bind=self.engine)
-            
             # Create indexes for performance
             with self.engine.connect() as conn:
-                # Check if indexes exist before creating
                 if self.database_url.startswith("sqlite"):
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_guid ON episodes(guid)"))
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_chunks_episode_id ON chunks(episode_id)"))
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_title ON episodes(title)"))
                 else:
-                    # PostgreSQL indexes
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_guid ON episodes(guid)"))
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_chunks_episode_id ON chunks(episode_id)"))
                     conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_title ON episodes(title)"))
                 conn.commit()
-            
             logger.info("Database initialized")
         except Exception as e:
             logger.error(f"Database initialization failed: {e}")
-            raise
+            allow_fallback = os.getenv("ALLOW_SQLITE_FALLBACK", "1") != "0"
+            if allow_fallback and not self.database_url.startswith("sqlite"):
+                # Fallback to SQLite to allow app to boot
+                logger.warning("Falling back to SQLite database due to initialization failure")
+                self.database_url = f"sqlite:///{SQLITE_PATH}"
+                self.engine = self._create_engine()
+                self.SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=self.engine)
+                Base.metadata.create_all(bind=self.engine)
+                with self.engine.connect() as conn:
+                    conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_guid ON episodes(guid)"))
+                    conn.execute(text("CREATE INDEX IF NOT EXISTS idx_chunks_episode_id ON chunks(episode_id)"))
+                    conn.execute(text("CREATE INDEX IF NOT EXISTS idx_episodes_title ON episodes(title)"))
+                    conn.commit()
+                logger.info("SQLite fallback database initialized")
+            else:
+                # Re-raise if fallback not allowed
+                raise
+
+    def _normalize_database_url(self, url: str) -> str:
+        """Normalize DATABASE_URL, enforce driver and SSL for Postgres."""
+        try:
+            parsed = urlparse(url)
+            scheme = parsed.scheme
+            # Convert postgres:// to postgresql+psycopg2:// if needed
+            if scheme == "postgres":
+                scheme = "postgresql+psycopg2"
+            elif scheme == "postgresql":
+                scheme = "postgresql+psycopg2"
+
+            if scheme.startswith("postgresql"):
+                # Rebuild URL with possibly updated scheme and sslmode
+                query = dict(parse_qsl(parsed.query))
+                # Ensure sslmode
+                if "sslmode" not in query:
+                    query["sslmode"] = "require"
+                new_query = urlencode(query)
+                rebuilt = parsed._replace(scheme=scheme, query=new_query)
+                return urlunparse(rebuilt)
+
+            return url
+        except Exception:
+            # If anything goes wrong, return original
+            return url
+
+    def _ensure_sslmode(self, url: str) -> str:
+        """Ensure sslmode=require is present for Postgres URLs."""
+        try:
+            parsed = urlparse(url)
+            if not parsed.scheme.startswith("postgres"):
+                return url
+            query = dict(parse_qsl(parsed.query))
+            if "sslmode" not in query:
+                query["sslmode"] = "require"
+            new_query = urlencode(query)
+            rebuilt = parsed._replace(query=new_query)
+            return urlunparse(rebuilt)
+        except Exception:
+            return url
     
     def upsert_episode(self, episode: Episode) -> int:
         """Insert or update an episode, return episode ID."""
@@ -251,5 +333,9 @@ class Database:
         self.engine.dispose()
 
 
-# Global database instance
-db = Database()
+# Global database instance (resilient to failures)
+try:
+    db = Database()
+except Exception as e:
+    logger.warning(f"Primary database init failed, using SQLite fallback: {e}")
+    db = Database(database_url=f"sqlite:///{SQLITE_PATH}")
