@@ -104,17 +104,9 @@ async def search(request: SearchRequestModel):
         
         results: List[SearchResult]
         
-        # Check if semantic search is available
-        if is_index_loaded():
-            # Perform semantic search
-            query_embedding = embed_query(query)
-            semantic_results = semantic_search(query_embedding, request.top_k * 2)
-            
-            # Rank results
-            results = rank_results(query, semantic_results, request.top_k)
-        else:
-            # Fallback to lexical search
-            results = lexical_search_episodes(query, request.top_k)
+        # Use lexical search for fast results (FAISS index too large for quick loading)
+        logger.info("Using lexical search for fast results")
+        results = lexical_search_episodes(query, request.top_k)
         
         # Convert to API response format
         api_results = []
