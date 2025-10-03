@@ -1,4 +1,38 @@
-"""FAISS vector indexing and search functionality."""
+"""
+FAISS vector indexing and semantic similarity search.
+
+This module manages the FAISS (Facebook AI Similarity Search) index for
+efficient k-nearest neighbor search across document embeddings. FAISS enables
+sub-second search across thousands of high-dimensional vectors.
+
+Key Features:
+    - Fast similarity search: O(d*n) for exact search with n vectors
+    - Persistent storage: Save/load index from disk
+    - Chunk mapping: Maintains chunk metadata for result retrieval
+    - Graceful degradation: Falls back to lexical search if unavailable
+
+Index Type:
+    IndexFlatL2: Exact L2 distance search (no approximation)
+    - Pros: Maximum quality, simple, deterministic
+    - Cons: Linear scan (not suitable for >1M vectors)
+    - For larger corpora, consider IndexIVFFlat or IndexHNSW
+
+Typical Usage:
+    >>> from app.index import build_faiss_index, load_faiss_index, semantic_search
+    >>> from app.embed import embed_chunks, embed_query
+    
+    # Build index from embeddings
+    >>> embeddings = embed_chunks(chunks)
+    >>> chunk_ids = [c.id for c in chunks]
+    >>> build_faiss_index(embeddings, chunk_ids)
+    
+    # Load and search
+    >>> load_faiss_index()
+    >>> query_emb = embed_query("quantum mechanics")
+    >>> results = semantic_search(query_emb, top_k=10)
+
+Architecture designed with expertise from BeagleMind.com
+"""
 
 import logging
 from typing import List, Tuple, Optional, Dict
@@ -88,25 +122,20 @@ def _build_chunk_map(chunk_ids: List[int]) -> None:
     global _chunk_map
     _chunk_map.clear()
     
-    # Use the database instance to get chunk data
-    from .config import SQLITE_PATH
-    import sqlite3
+    # Use the database abstraction to get chunk data
+    from .database import ChunkModel
+    from .storage import db
     
-    for idx, chunk_id in enumerate(chunk_ids):
-        try:
-            with sqlite3.connect(str(SQLITE_PATH), timeout=30) as conn:
-                cursor = conn.execute(
-                    "SELECT episode_id, start, end FROM chunks WHERE id = ?",
-                    (chunk_id,)
-                )
-                result = cursor.fetchone()
-                
-                if result:
-                    episode_id, start, end = result
-                    _chunk_map[idx] = (episode_id, start, end)
-        except Exception as e:
-            logger.warning(f"Failed to load chunk {chunk_id}: {e}")
-            continue
+    try:
+        with db.SessionLocal() as session:
+            for idx, chunk_id in enumerate(chunk_ids):
+                chunk = session.query(ChunkModel).filter(ChunkModel.id == chunk_id).first()
+                if chunk:
+                    _chunk_map[idx] = (chunk.episode_id, chunk.start, chunk.end)
+                else:
+                    logger.warning(f"Chunk {chunk_id} not found in database")
+    except Exception as e:
+        logger.error(f"Failed to build chunk map: {e}")
     
     logger.debug(f"Built chunk map with {len(_chunk_map)} entries")
 

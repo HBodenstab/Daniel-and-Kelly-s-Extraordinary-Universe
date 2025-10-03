@@ -90,24 +90,17 @@ def rank_results(
 
 
 def _get_chunk_metadata(chunk_idx: int) -> Optional[Tuple[int, int, int]]:
-    """Get chunk metadata from database."""
+    """Get chunk metadata from database using database abstraction."""
     try:
-        import sqlite3
-        from .config import SQLITE_PATH
-        with sqlite3.connect(str(SQLITE_PATH)) as conn:
-            cursor = conn.execute("""
-                SELECT episode_id, start, end 
-                FROM chunks 
-                WHERE id = (
-                    SELECT id FROM chunks 
-                    ORDER BY episode_id, idx 
-                    LIMIT 1 OFFSET ?
-                )
-            """, (chunk_idx,))
-            
-            result = cursor.fetchone()
-            if result:
-                return result
+        # Use the database abstraction to get chunk by index
+        from .database import ChunkModel
+        from .storage import db
+        
+        with db.SessionLocal() as session:
+            # Get chunk by its index position (assuming chunks are ordered by id)
+            chunk = session.query(ChunkModel).order_by(ChunkModel.id).offset(chunk_idx).first()
+            if chunk:
+                return (chunk.episode_id, chunk.start, chunk.end)
     except Exception as e:
         logger.error(f"Error getting chunk metadata: {e}")
     
