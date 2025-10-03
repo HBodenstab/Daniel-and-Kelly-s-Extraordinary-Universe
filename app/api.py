@@ -162,7 +162,7 @@ async def episodes_page(page: int = 1, limit: int = 20):
                     "id": ep.id,
                     "title": ep.title,
                     "link": ep.link,
-                    "pub_date": ep.pub_date.isoformat() if ep.pub_date else None,
+                    "pub_date": str(ep.pub_date) if ep.pub_date else None,
                     "description": ep.description[:200] + "..." if ep.description and len(ep.description) > 200 else ep.description
                 })
         
