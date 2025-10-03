@@ -10,6 +10,7 @@ import uvicorn
 
 from .models import SearchRequest, SearchResponse, SearchResult
 from .storage import db
+from .database import EpisodeModel
 from .embed import embed_query
 from .index import load_faiss_index, semantic_search, is_index_loaded
 from .rank import rank_results, lexical_search_episodes, normalize_query
@@ -152,8 +153,8 @@ async def episodes_page(page: int = 1, limit: int = 20):
         total_count = db.get_episode_count()
         
         with db.SessionLocal() as session:
-            episode_models = session.query(db.EpisodeModel).order_by(
-                db.EpisodeModel.pub_date.desc()
+            episode_models = session.query(EpisodeModel).order_by(
+                EpisodeModel.pub_date.desc()
             ).offset(offset).limit(limit).all()
             
             for ep in episode_models:
