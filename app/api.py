@@ -45,10 +45,19 @@ async def startup_event():
     """Initialize the application on startup."""
     logger.info("Starting Podcast Search API...")
     
-    # Try to load the search index
-    if not is_index_loaded():
-        logger.info("Loading search index...")
-        load_faiss_index()
+    try:
+        # Try to load the search index
+        if not is_index_loaded():
+            logger.info("Loading search index...")
+            load_faiss_index()
+            logger.info("Search index loaded successfully.")
+        else:
+            logger.info("Search index already loaded.")
+    except Exception as e:
+        logger.warning(f"Could not load search index: {e}")
+        logger.info("Application will start without search index. Use /api/refresh to load data.")
+    
+    logger.info("Application startup complete.")
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -108,6 +117,12 @@ async def search(request: SearchRequestModel):
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/health")
+async def health():
+    """Simple health check endpoint."""
+    return {"status": "healthy", "message": "Podcast Search API is running"}
 
 
 @app.get("/api/stats")

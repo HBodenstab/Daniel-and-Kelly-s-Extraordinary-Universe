@@ -17,3 +17,5 @@ psycopg2-binary==2.*
 alembic==1.*
 # Production server
 gunicorn==21.*
+# Additional dependencies for Railway
+python-dotenv==1.*

@@ -82,8 +82,13 @@ def update():
         logger.info("Generating embeddings...")
         embeddings = embed_chunks(all_chunks)
         
-        # Get chunk IDs for saving
-        chunk_ids = [chunk.id for chunk in all_chunks if chunk.id is not None]
+        # Get chunk IDs from database (after chunks are saved)
+        logger.info("Retrieving chunk IDs from database...")
+        chunk_ids = []
+        for chunk, episode in db.get_all_chunks():
+            chunk_ids.append(chunk.id)
+        
+        logger.info(f"Retrieved {len(chunk_ids)} chunk IDs from database")
         
         # Step 5: Save embeddings
         logger.info("Saving embeddings...")

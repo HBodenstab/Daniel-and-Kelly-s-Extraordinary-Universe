@@ -93,7 +93,8 @@ def _get_chunk_metadata(chunk_idx: int) -> Optional[Tuple[int, int, int]]:
     """Get chunk metadata from database."""
     try:
         import sqlite3
-        with sqlite3.connect(str(db.db_path)) as conn:
+        from .config import SQLITE_PATH
+        with sqlite3.connect(str(SQLITE_PATH)) as conn:
             cursor = conn.execute("""
                 SELECT episode_id, start, end 
                 FROM chunks 
