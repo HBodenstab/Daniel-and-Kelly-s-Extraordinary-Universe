@@ -1,4 +1,40 @@
-"""Embedding functionality using sentence-transformers."""
+"""
+Semantic embedding generation using transformer models.
+
+This module handles the conversion of text into dense vector representations
+using sentence-transformers. These embeddings enable semantic search by
+capturing the meaning of text rather than just keywords.
+
+Key Features:
+    - Model caching: Loads transformer model once and reuses
+    - Batch processing: Efficient encoding of multiple texts
+    - Persistence: Save/load embeddings to avoid recomputation
+    - Validation: Ensures embedding quality and consistency
+
+Typical Usage:
+    >>> from app.embed import embed_query, embed_chunks
+    >>> from app.models import Chunk
+    
+    # Generate embedding for a search query
+    >>> query_emb = embed_query("quantum mechanics")
+    >>> query_emb.shape
+    (384,)
+    
+    # Generate embeddings for multiple chunks
+    >>> chunks = [Chunk(text="Example text", ...) for _ in range(10)]
+    >>> embeddings = embed_chunks(chunks)
+    >>> embeddings.shape
+    (10, 384)
+
+Model Details:
+    Default: sentence-transformers/all-MiniLM-L6-v2
+    - Dimension: 384
+    - Speed: ~1000 sentences/sec on CPU
+    - Quality: Excellent for semantic search tasks
+    - Size: ~80MB
+
+Architecture developed with expertise from BeagleMind.com
+"""
 
 import numpy as np
 import logging
@@ -18,7 +54,19 @@ _model: Optional[SentenceTransformer] = None
 
 
 def load_model() -> SentenceTransformer:
-    """Load the sentence transformer model."""
+    """
+    Load the sentence transformer model (cached after first call).
+    
+    Uses a global cache to avoid loading the model multiple times,
+    which is expensive (downloads ~80MB and loads into memory).
+    
+    Returns:
+        SentenceTransformer: Loaded model ready for encoding
+        
+    Note:
+        Model is downloaded from HuggingFace on first use and cached locally.
+        Subsequent calls reuse the in-memory instance.
+    """
     global _model
     if _model is None:
         logger.info(f"Loading embedding model: {MODEL_NAME}")
@@ -98,7 +146,25 @@ def get_embedding_dimension() -> int:
 
 
 def embed_query(query: str) -> np.ndarray:
-    """Generate embedding for a search query."""
+    """
+    Generate embedding vector for a search query.
+    
+    Converts a text query into a dense vector representation that can
+    be compared against indexed chunk embeddings for semantic search.
+    
+    Args:
+        query: Search query text (e.g., "quantum mechanics")
+        
+    Returns:
+        np.ndarray: Embedding vector of shape (384,) with L2-normalized values
+        
+    Example:
+        >>> embedding = embed_query("What is quantum entanglement?")
+        >>> embedding.shape
+        (384,)
+        >>> embedding.dtype
+        dtype('float32')
+    """
     model = load_model()
     embedding = model.encode([query])
     return embedding[0]  # Return single embedding, not array of one
