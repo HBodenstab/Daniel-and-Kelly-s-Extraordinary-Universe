@@ -54,3 +54,8 @@ The system includes:
 - FAISS vector index
 
 Ready to search the universe! 🚀
+
+## Latest Update
+- Smart hybrid search (semantic + lexical)
+- Analytics dashboard restored
+- Railway deployment optimized
