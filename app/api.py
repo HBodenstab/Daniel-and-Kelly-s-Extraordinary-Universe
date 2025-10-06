@@ -160,6 +160,40 @@ async def search(request: SearchRequestModel, http_request: Request):
 
 
 
+@app.get("/analytics")
+async def analytics():
+    """Analytics page."""
+    return templates.TemplateResponse("analytics.html", {"request": {}})
+
+@app.get("/api/usage")
+async def get_usage():
+    """Get usage statistics."""
+    try:
+        stats = db.get_usage_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Failed to get usage stats: {e}")
+        return {"total_searches": 0, "unique_users": 0}
+
+@app.get("/api/analytics")
+async def get_detailed_analytics():
+    """Get detailed analytics data."""
+    try:
+        analytics = db.get_detailed_analytics()
+        return analytics
+    except Exception as e:
+        logger.error(f"Failed to get detailed analytics: {e}")
+        return {
+            "total_searches": 0,
+            "unique_users": 0,
+            "total_episodes": 0,
+            "total_chunks": 0,
+            "recent_searches": 0,
+            "hourly_distribution": [],
+            "daily_stats": [],
+            "last_updated": "error"
+        }
+
 @app.get("/health")
 async def health():
     """Simple health check endpoint."""
