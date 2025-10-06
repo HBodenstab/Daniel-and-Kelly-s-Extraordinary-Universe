@@ -15,7 +15,7 @@ from urllib.parse import urlparse, urlencode, parse_qsl, urlunparse
 
 from sqlalchemy import create_engine, text, Index
 from sqlalchemy.orm import sessionmaker, declarative_base
-from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey, func
 from sqlalchemy.orm import relationship
 
 from .models import Episode, Chunk
@@ -56,6 +56,16 @@ class ChunkModel(Base):
     
     # Relationship
     episode = relationship("EpisodeModel", back_populates="chunks")
+
+
+class UsageModel(Base):
+    """SQLAlchemy model for tracking usage statistics."""
+    __tablename__ = "usage"
+    
+    id = Column(Integer, primary_key=True, autoincrement=True)
+    timestamp = Column(DateTime, default=func.now())
+    ip_address = Column(String)       # optional, for unique user tracking
+    endpoint = Column(String)         # e.g. "/api/search"
 
 
 class Database:
@@ -327,6 +337,32 @@ class Database:
         """Get total number of chunks."""
         with self.SessionLocal() as session:
             return session.query(ChunkModel).count()
+    
+    def record_usage(self, ip_address: str, endpoint: str) -> None:
+        """Record a usage event."""
+        with self.SessionLocal() as session:
+            try:
+                usage = UsageModel(ip_address=ip_address, endpoint=endpoint)
+                session.add(usage)
+                session.commit()
+                logger.debug(f"Recorded usage: {endpoint} from {ip_address}")
+            except Exception as e:
+                session.rollback()
+                logger.error(f"Failed to record usage: {e}")
+    
+    def get_usage_stats(self) -> dict:
+        """Get usage statistics."""
+        with self.SessionLocal() as session:
+            try:
+                total_searches = session.query(func.count(UsageModel.id)).scalar() or 0
+                unique_users = session.query(func.count(func.distinct(UsageModel.ip_address))).scalar() or 0
+                return {
+                    "total_searches": total_searches,
+                    "unique_users": unique_users
+                }
+            except Exception as e:
+                logger.error(f"Failed to get usage stats: {e}")
+                return {"total_searches": 0, "unique_users": 0}
     
     def close(self):
         """Close database connections."""

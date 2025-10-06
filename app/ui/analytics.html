@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analytics - Daniel & Kelly's Extraordinary Universe</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #1e293b;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 24px;
+        }
+
+        .header {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 20px 0;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: white;
+            text-decoration: none;
+        }
+
+        .nav {
+            display: flex;
+            gap: 24px;
+        }
+
+        .nav a {
+            color: white;
+            text-decoration: none;
+            font-weight: 500;
+            transition: opacity 0.3s ease;
+        }
+
+        .nav a:hover {
+            opacity: 0.8;
+        }
+
+        .main {
+            padding: 60px 0;
+        }
+
+        .analytics-container {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            margin-bottom: 40px;
+        }
+
+        .analytics-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .analytics-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 16px;
+        }
+
+        .analytics-subtitle {
+            font-size: 18px;
+            color: #64748b;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .stat-card {
+            background: #f8fafc;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #3b82f6;
+            margin-bottom: 8px;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #64748b;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .loading {
+            text-align: center;
+            color: #64748b;
+            font-size: 16px;
+        }
+
+        .error {
+            text-align: center;
+            color: #ef4444;
+            font-size: 16px;
+        }
+
+        .refresh-btn {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            display: block;
+            margin: 0 auto;
+        }
+
+        .refresh-btn:hover {
+            background: #2563eb;
+        }
+
+        .last-updated {
+            text-align: center;
+            color: #64748b;
+            font-size: 14px;
+            margin-top: 20px;
+        }
+
+        @media (max-width: 768px) {
+            .analytics-container {
+                padding: 24px;
+            }
+            
+            .analytics-title {
+                font-size: 28px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container">
+            <div class="header-content">
+                <a href="/" class="logo">DANIEL & KELLY'S EXTRAORDINARY UNIVERSE</a>
+                <nav class="nav">
+                    <a href="/">Home</a>
+                </nav>
+            </div>
+        </div>
+    </header>
+
+    <main class="main">
+        <div class="container">
+            <div class="analytics-container">
+                <div class="analytics-header">
+                    <h1 class="analytics-title">Usage Analytics</h1>
+                    <p class="analytics-subtitle">Track search activity and user engagement</p>
+                </div>
+
+                <div id="analytics-content">
+                    <div class="loading">Loading analytics...</div>
+                </div>
+
+                <button class="refresh-btn" onclick="loadAnalytics()">Refresh Data</button>
+                <div class="last-updated" id="last-updated"></div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        async function loadAnalytics() {
+            const contentDiv = document.getElementById('analytics-content');
+            const lastUpdatedDiv = document.getElementById('last-updated');
+            
+            try {
+                contentDiv.innerHTML = '<div class="loading">Loading analytics...</div>';
+                
+                const resp = await fetch('/api/usage');
+                const data = await resp.json();
+                
+                contentDiv.innerHTML = `
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-value">${data.total_searches}</div>
+                            <div class="stat-label">Total Searches</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-value">${data.unique_users}</div>
+                            <div class="stat-label">Unique Users</div>
+                        </div>
+                    </div>
+                `;
+                
+                lastUpdatedDiv.textContent = `Last updated: ${new Date().toLocaleString()}`;
+                
+            } catch (error) {
+                console.error('Failed to load analytics:', error);
+                contentDiv.innerHTML = '<div class="error">Failed to load analytics data</div>';
+                lastUpdatedDiv.textContent = '';
+            }
+        }
+
+        // Load analytics on page load
+        loadAnalytics();
+        
+        // Auto-refresh every 5 minutes
+        setInterval(loadAnalytics, 300000);
+    </script>
+</body>
+</html>

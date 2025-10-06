@@ -108,7 +108,7 @@ async def search_page(request: Request, q: str = "", top_k: int = 10):
 
 
 @app.post("/api/search", response_model=SearchResponseModel)
-async def search(request: SearchRequestModel):
+async def search(request: SearchRequestModel, http_request: Request):
     """Search through podcast episodes."""
     try:
         query = normalize_query(request.query)
@@ -116,6 +116,10 @@ async def search(request: SearchRequestModel):
             raise HTTPException(status_code=400, detail="Query cannot be empty")
         
         logger.info(f"API search request: '{query}'")
+        
+        # Record usage
+        user_ip = http_request.client.host
+        db.record_usage(ip_address=user_ip, endpoint="/api/search")
         
         results: List[SearchResult]
         
@@ -153,6 +157,22 @@ async def search(request: SearchRequestModel):
     except Exception as e:
         logger.error(f"Search error: {e}")
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.get("/analytics")
+async def analytics():
+    """Analytics page."""
+    return templates.TemplateResponse("analytics.html", {"request": {}})
+
+@app.get("/api/usage")
+async def get_usage():
+    """Get usage statistics."""
+    try:
+        stats = db.get_usage_stats()
+        return stats
+    except Exception as e:
+        logger.error(f"Failed to get usage stats: {e}")
+        return {"total_searches": 0, "unique_users": 0}
 
 
 @app.get("/episodes")
