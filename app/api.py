@@ -1,18 +1,15 @@
 """FastAPI web application for podcast search."""
 
 import logging
-import json
 from typing import List, Dict, Any
-from pathlib import Path
 from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import uvicorn
 
-from .models import SearchRequest, SearchResponse, SearchResult
+from .models import SearchResult
 from .storage import db
-from .database import EpisodeModel
 from .embed import embed_query
 from .index import load_faiss_index, semantic_search, is_index_loaded
 from .rank import rank_results, lexical_search_episodes, normalize_query
@@ -32,6 +29,7 @@ app = FastAPI(
 _refresh_in_progress = False
 
 # Jinja2 templates
+from pathlib import Path
 templates = Jinja2Templates(directory=str((Path(__file__).parent / "ui").resolve()))
 
 class SearchRequestModel(BaseModel):
@@ -71,40 +69,6 @@ async def root(request: Request):
     return templates.TemplateResponse("index.html", {"request": request})
 
 
-@app.get("/search", response_class=HTMLResponse)
-async def search_page(request: Request, q: str = "", top_k: int = 10):
-    """Serve the search page with optional query parameter using server-side rendering."""
-    results: List[Dict[str, Any]] = []
-    query = normalize_query(q) if q else ""
-
-    if query:
-        try:
-            # Use lexical search for fast SSR results
-            search_results = lexical_search_episodes(query, top_k)
-            for r in search_results:
-                results.append({
-                    "episode_id": r.episode_id,
-                    "title": r.title,
-                    "pub_date": r.pub_date,
-                    "link": r.link,
-                    "score": round(r.score, 4),
-                    "snippet": r.snippet,
-                    "semantic_score": round(r.semantic_score, 4),
-                    "lexical_score": round(r.lexical_score, 4),
-                })
-        except Exception as e:
-            logger.error(f"SSR search failed: {e}")
-            results = []
-
-    return templates.TemplateResponse(
-        "search.html",
-        {
-            "request": request,
-            "query": query,
-            "results": results,
-            "total_found": len(results),
-        },
-    )
 
 
 @app.post("/api/search", response_model=SearchResponseModel)
@@ -123,15 +87,50 @@ async def search(request: SearchRequestModel, http_request: Request):
         
         results: List[SearchResult]
         
-        # Use lexical search for fast results (FAISS index too large for quick loading)
-        logger.info("Using lexical search for fast results")
-        logger.info(f"Searching for: '{query}' with top_k: {request.top_k}")
+        # Smart search strategy: lexical first, semantic only when needed
+        logger.info(f"Smart search for: '{query}' with top_k: {request.top_k}")
         
         try:
-            results = lexical_search_episodes(query, request.top_k)
-            logger.info(f"Lexical search returned {len(results)} results")
+            # Start with fast lexical search
+            lexical_results = lexical_search_episodes(query, request.top_k)
+            logger.info(f"Lexical search returned {len(lexical_results)} results")
+            
+            # Check if we need semantic search for better results
+            should_use_semantic = (
+                is_index_loaded() and 
+                len(lexical_results) < request.top_k and  # Not enough lexical results
+                len(query.split()) >= 2  # Multi-word queries benefit more from semantic
+            )
+            
+            if should_use_semantic:
+                logger.info("Using semantic search to improve results")
+                try:
+                    query_embedding = embed_query(query)
+                    semantic_raw = semantic_search(query_embedding, request.top_k)
+                    semantic_results = rank_results(query, semantic_raw, request.top_k)
+                    
+                    # Combine lexical and semantic results, removing duplicates
+                    all_results = lexical_results + semantic_results
+                    seen_episodes = set()
+                    combined_results = []
+                    
+                    for result in all_results:
+                        if result.episode_id not in seen_episodes:
+                            combined_results.append(result)
+                            seen_episodes.add(result.episode_id)
+                    
+                    # Take top_k results
+                    results = combined_results[:request.top_k]
+                    logger.info(f"Combined search returned {len(results)} results")
+                except Exception as e:
+                    logger.warning(f"Semantic search failed, using lexical only: {e}")
+                    results = lexical_results
+            else:
+                logger.info("Using lexical search only (fast path)")
+                results = lexical_results
+                
         except Exception as e:
-            logger.error(f"Lexical search failed: {e}")
+            logger.error(f"Search failed: {e}")
             results = []
         
         # Convert to API response format
@@ -159,105 +158,14 @@ async def search(request: SearchRequestModel, http_request: Request):
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@app.get("/analytics")
-async def analytics():
-    """Analytics page."""
-    return templates.TemplateResponse("analytics.html", {"request": {}})
-
-@app.get("/api/usage")
-async def get_usage():
-    """Get usage statistics."""
-    try:
-        stats = db.get_usage_stats()
-        return stats
-    except Exception as e:
-        logger.error(f"Failed to get usage stats: {e}")
-        return {"total_searches": 0, "unique_users": 0}
-
-@app.get("/api/analytics")
-async def get_detailed_analytics():
-    """Get detailed analytics data."""
-    try:
-        analytics = db.get_detailed_analytics()
-        return analytics
-    except Exception as e:
-        logger.error(f"Failed to get detailed analytics: {e}")
-        return {
-            "total_searches": 0,
-            "unique_users": 0,
-            "total_episodes": 0,
-            "total_chunks": 0,
-            "recent_searches": 0,
-            "hourly_distribution": [],
-            "daily_stats": [],
-            "last_updated": "error"
-        }
-
-
-@app.get("/episodes")
-async def episodes_page(page: int = 1, limit: int = 20):
-    """Browse episodes page."""
-    try:
-        # Calculate offset for pagination
-        offset = (page - 1) * limit
-        
-        # Get episodes from database
-        episodes = []
-        total_count = db.get_episode_count()
-        
-        with db.SessionLocal() as session:
-            episode_models = session.query(EpisodeModel).order_by(
-                EpisodeModel.pub_date.desc()
-            ).offset(offset).limit(limit).all()
-            
-            for ep in episode_models:
-                episodes.append({
-                    "id": ep.id,
-                    "title": ep.title,
-                    "link": ep.link,
-                    "pub_date": str(ep.pub_date) if ep.pub_date else None,
-                    "description": ep.description[:200] + "..." if ep.description and len(ep.description) > 200 else ep.description
-                })
-        
-        # Calculate pagination info
-        total_pages = (total_count + limit - 1) // limit
-        has_prev = page > 1
-        has_next = page < total_pages
-        
-        # Read and serve the episodes HTML page
-        html_file = Path(__file__).parent / "ui" / "episodes.html"
-        if not html_file.exists():
-            raise HTTPException(status_code=404, detail="Episodes page not found")
-        
-        with open(html_file, 'r') as f:
-            content = f.read()
-        
-        # Replace placeholder data with actual episodes
-        episodes_json = json.dumps(episodes)
-        pagination_info = json.dumps({
-            "page": page,
-            "total_pages": total_pages,
-            "total_count": total_count,
-            "has_prev": has_prev,
-            "has_next": has_next,
-            "prev_page": page - 1 if has_prev else None,
-            "next_page": page + 1 if has_next else None
-        })
-        
-        content = content.replace('{{EPISODES}}', episodes_json)
-        content = content.replace('{{PAGINATION}}', pagination_info)
-        
-        return HTMLResponse(content=content)
-        
-    except Exception as e:
-        logger.error(f"Error serving episodes page: {e}")
-        raise HTTPException(status_code=500, detail=str(e))
 
 
 @app.get("/health")
 async def health():
     """Simple health check endpoint."""
     return {"status": "healthy", "message": "Podcast Search API is running"}
+
+
 
 
 @app.get("/api/stats")
