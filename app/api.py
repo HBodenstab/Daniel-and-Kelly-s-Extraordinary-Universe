@@ -199,6 +199,15 @@ async def health():
     """Simple health check endpoint."""
     return {"status": "healthy", "message": "Podcast Search API is running"}
 
+@app.get("/test")
+async def test():
+    """Test endpoint to verify deployment."""
+    return {
+        "message": "FastAPI app is running on Railway!",
+        "timestamp": "2024-01-01T00:00:00Z",
+        "version": "1.0.0"
+    }
+
 
 
 
