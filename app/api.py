@@ -50,8 +50,18 @@ async def startup_event():
     """Initialize the application on startup."""
     logger.info("Starting Podcast Search API...")
     
-    # Skip FAISS index loading for now - use lexical search only
-    logger.info("Using lexical search only (FAISS index loading disabled)")
+    try:
+        # Try to load the search index with optimized chunk mapping
+        if not is_index_loaded():
+            logger.info("Loading search index...")
+            load_faiss_index()
+            logger.info("Search index loaded successfully.")
+        else:
+            logger.info("Search index already loaded.")
+    except Exception as e:
+        logger.warning(f"Could not load search index: {e}")
+        logger.info("Application will start without search index. Use lexical search only.")
+    
     logger.info("Application startup complete.")
 
 
@@ -163,6 +173,25 @@ async def get_usage():
     except Exception as e:
         logger.error(f"Failed to get usage stats: {e}")
         return {"total_searches": 0, "unique_users": 0}
+
+@app.get("/api/analytics")
+async def get_detailed_analytics():
+    """Get detailed analytics data."""
+    try:
+        analytics = db.get_detailed_analytics()
+        return analytics
+    except Exception as e:
+        logger.error(f"Failed to get detailed analytics: {e}")
+        return {
+            "total_searches": 0,
+            "unique_users": 0,
+            "total_episodes": 0,
+            "total_chunks": 0,
+            "recent_searches": 0,
+            "hourly_distribution": [],
+            "daily_stats": [],
+            "last_updated": "error"
+        }
 
 
 @app.get("/episodes")

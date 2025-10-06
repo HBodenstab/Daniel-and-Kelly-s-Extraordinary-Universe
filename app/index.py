@@ -128,16 +128,25 @@ def _build_chunk_map(chunk_ids: List[int]) -> None:
     
     try:
         with db.SessionLocal() as session:
+            # Optimize: Get all chunks in a single query instead of 147k individual queries
+            logger.info(f"Building chunk map for {len(chunk_ids)} chunks...")
+            chunks = session.query(ChunkModel).filter(ChunkModel.id.in_(chunk_ids)).all()
+            
+            # Create a lookup dict for fast access
+            chunk_lookup = {chunk.id: chunk for chunk in chunks}
+            
+            # Build the map
             for idx, chunk_id in enumerate(chunk_ids):
-                chunk = session.query(ChunkModel).filter(ChunkModel.id == chunk_id).first()
+                chunk = chunk_lookup.get(chunk_id)
                 if chunk:
                     _chunk_map[idx] = (chunk.episode_id, chunk.start, chunk.end)
                 else:
                     logger.warning(f"Chunk {chunk_id} not found in database")
+                    
     except Exception as e:
         logger.error(f"Failed to build chunk map: {e}")
     
-    logger.debug(f"Built chunk map with {len(_chunk_map)} entries")
+    logger.info(f"Built chunk map with {len(_chunk_map)} entries")
 
 
 def semantic_search(query_embedding: np.ndarray, top_k: int = 10) -> List[Tuple[int, float]]:

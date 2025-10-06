@@ -364,6 +364,67 @@ class Database:
                 logger.error(f"Failed to get usage stats: {e}")
                 return {"total_searches": 0, "unique_users": 0}
     
+    def get_detailed_analytics(self) -> dict:
+        """Get detailed analytics data."""
+        with self.SessionLocal() as session:
+            try:
+                # Basic stats
+                total_searches = session.query(func.count(UsageModel.id)).scalar() or 0
+                unique_users = session.query(func.count(func.distinct(UsageModel.ip_address))).scalar() or 0
+                
+                # Database content stats
+                total_episodes = session.query(func.count(EpisodeModel.id)).scalar() or 0
+                total_chunks = session.query(func.count(ChunkModel.id)).scalar() or 0
+                
+                # Recent activity (last 24 hours)
+                from datetime import datetime, timedelta
+                yesterday = datetime.utcnow() - timedelta(days=1)
+                recent_searches = session.query(func.count(UsageModel.id)).filter(
+                    UsageModel.timestamp >= yesterday
+                ).scalar() or 0
+                
+                # Top search times (hourly distribution)
+                hourly_stats = session.query(
+                    func.extract('hour', UsageModel.timestamp).label('hour'),
+                    func.count(UsageModel.id).label('count')
+                ).group_by(
+                    func.extract('hour', UsageModel.timestamp)
+                ).order_by('count').all()
+                
+                # Search frequency over time (last 7 days)
+                week_ago = datetime.utcnow() - timedelta(days=7)
+                daily_stats = session.query(
+                    func.date(UsageModel.timestamp).label('date'),
+                    func.count(UsageModel.id).label('count')
+                ).filter(
+                    UsageModel.timestamp >= week_ago
+                ).group_by(
+                    func.date(UsageModel.timestamp)
+                ).order_by('date').all()
+                
+                return {
+                    "total_searches": total_searches,
+                    "unique_users": unique_users,
+                    "total_episodes": total_episodes,
+                    "total_chunks": total_chunks,
+                    "recent_searches": recent_searches,
+                    "hourly_distribution": [{"hour": int(h), "count": int(c)} for h, c in hourly_stats],
+                    "daily_stats": [{"date": str(d), "count": int(c)} for d, c in daily_stats],
+                    "last_updated": datetime.utcnow().isoformat()
+                }
+            except Exception as e:
+                logger.error(f"Failed to get detailed analytics: {e}")
+                return {
+                    "total_searches": 0,
+                    "unique_users": 0,
+                    "total_episodes": 0,
+                    "total_chunks": 0,
+                    "recent_searches": 0,
+                    "hourly_distribution": [],
+                    "daily_stats": [],
+                    "last_updated": datetime.utcnow().isoformat()
+                }
+    
     def close(self):
         """Close database connections."""
         self.engine.dispose()
