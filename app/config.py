@@ -25,7 +25,12 @@ CHUNK_OVERLAP = int(os.getenv("CHUNK_OVERLAP", "200"))  # characters
 TOP_K = int(os.getenv("TOP_K", "10"))
 HYBRID_ALPHA = float(os.getenv("HYBRID_ALPHA", "0.7"))  # semantic weight
 
-# File paths
+# File paths - check for Railway volume first
+if os.getenv("RAILWAY_ENVIRONMENT"):
+    # Railway volume mount point
+    DATA_DIR = Path("/data")
+    DATA_DIR.mkdir(exist_ok=True)
+
 SQLITE_PATH = DATA_DIR / "episodes.sqlite"
 FAISS_PATH = DATA_DIR / "index.faiss"
 EMBEDDINGS_PATH = DATA_DIR / "embeddings.npz"
