@@ -59,6 +59,14 @@ async def startup_event():
     except Exception as e:
         logger.warning(f"Could not load search index: {e}")
         logger.info("Application will start without search index. Use lexical search only.")
+        
+        # Try to set up ML data if missing
+        try:
+            import railway_data_setup
+            railway_data_setup.setup_railway_data()
+            logger.info("Attempted to set up ML data for Railway deployment.")
+        except Exception as setup_error:
+            logger.warning(f"Could not set up ML data: {setup_error}")
     
     logger.info("Application startup complete.")
 
