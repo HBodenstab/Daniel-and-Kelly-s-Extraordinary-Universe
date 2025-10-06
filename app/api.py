@@ -4,8 +4,9 @@ import logging
 import json
 from typing import List, Dict, Any
 from pathlib import Path
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
 import uvicorn
 
@@ -30,6 +31,8 @@ app = FastAPI(
 # Global flag for refresh operation
 _refresh_in_progress = False
 
+# Jinja2 templates
+templates = Jinja2Templates(directory=str((Path(__file__).parent / "ui").resolve()))
 
 class SearchRequestModel(BaseModel):
     query: str
@@ -63,35 +66,45 @@ async def startup_event():
 
 
 @app.get("/", response_class=HTMLResponse)
-async def root():
-    """Serve the main search interface."""
-    # Serve the static HTML file
-    html_file = Path(__file__).parent / "ui" / "index.html"
-    with open(html_file, 'r') as f:
-        content = f.read()
-    return HTMLResponse(content=content)
+async def root(request: Request):
+    """Serve the main search interface via Jinja2 (auto-escaped)."""
+    return templates.TemplateResponse("index.html", {"request": request})
 
 
 @app.get("/search", response_class=HTMLResponse)
-async def search_page(q: str = ""):
-    """Serve the search page with optional query parameter."""
-    # Serve the static HTML file
-    html_file = Path(__file__).parent / "ui" / "search.html"
-    try:
-        with open(html_file, 'r') as f:
-            content = f.read()
-        # Replace placeholder with actual query if provided
-        if q:
-            content = content.replace('{{query}}', q)
-        else:
-            content = content.replace('{{query}}', '')
-        return HTMLResponse(content=content)
-    except FileNotFoundError:
-        # Fallback to index.html if search.html doesn't exist
-        html_file = Path(__file__).parent / "ui" / "index.html"
-        with open(html_file, 'r') as f:
-            content = f.read()
-        return HTMLResponse(content=content)
+async def search_page(request: Request, q: str = "", top_k: int = 10):
+    """Serve the search page with optional query parameter using server-side rendering."""
+    results: List[Dict[str, Any]] = []
+    query = normalize_query(q) if q else ""
+
+    if query:
+        try:
+            # Use lexical search for fast SSR results
+            search_results = lexical_search_episodes(query, top_k)
+            for r in search_results:
+                results.append({
+                    "episode_id": r.episode_id,
+                    "title": r.title,
+                    "pub_date": r.pub_date,
+                    "link": r.link,
+                    "score": round(r.score, 4),
+                    "snippet": r.snippet,
+                    "semantic_score": round(r.semantic_score, 4),
+                    "lexical_score": round(r.lexical_score, 4),
+                })
+        except Exception as e:
+            logger.error(f"SSR search failed: {e}")
+            results = []
+
+    return templates.TemplateResponse(
+        "search.html",
+        {
+            "request": request,
+            "query": query,
+            "results": results,
+            "total_found": len(results),
+        },
+    )
 
 
 @app.post("/api/search", response_model=SearchResponseModel)

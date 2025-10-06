@@ -122,7 +122,22 @@
         </form>
 
         <div id="results" class="results">
-            <div class="no-results">Enter a search term to find episodes</div>
+            {% if results and results|length > 0 %}
+                {% for result in results %}
+                <div class="result">
+                    <h3 class="result-title">
+                        <a href="{{ result.link }}" target="_blank" rel="noopener noreferrer">{{ result.title }}</a>
+                    </h3>
+                    <div class="result-meta">
+                        {{ result.pub_date if result.pub_date else 'Unknown date' }}
+                    </div>
+                    <div class="result-snippet">{{ result.snippet }}</div>
+                    <div class="result-score">Score: {{ (result.score * 100) | round(1) }}%</div>
+                </div>
+                {% endfor %}
+            {% else %}
+                <div class="no-results">Enter a search term to find episodes</div>
+            {% endif %}
         </div>
     </main>
 
@@ -166,31 +181,58 @@
         });
 
         function displayResults(data) {
+            resultsDiv.innerHTML = '';
             if (!data.results || data.results.length === 0) {
-                resultsDiv.innerHTML = '<div class="no-results">No episodes found. Try different keywords.</div>';
+                const empty = document.createElement('div');
+                empty.className = 'no-results';
+                empty.textContent = 'No episodes found. Try different keywords.';
+                resultsDiv.appendChild(empty);
                 return;
             }
 
-            const resultsHtml = data.results.map(result => `
-                <div class="result">
-                    <h3 class="result-title">
-                        <a href="${result.link}" target="_blank">${result.title}</a>
-                    </h3>
-                    <div class="result-meta">
-                        ${result.pub_date ? new Date(result.pub_date).toLocaleDateString() : 'Unknown date'}
-                    </div>
-                    <div class="result-snippet">${result.snippet}</div>
-                    <div class="result-score">Score: ${(result.score * 100).toFixed(1)}%</div>
-                </div>
-            `).join('');
+            data.results.forEach(result => {
+                const container = document.createElement('div');
+                container.className = 'result';
 
-            resultsDiv.innerHTML = resultsHtml;
+                const h3 = document.createElement('h3');
+                h3.className = 'result-title';
+                const a = document.createElement('a');
+                a.href = result.link;
+                a.target = '_blank';
+                a.rel = 'noopener noreferrer';
+                a.textContent = result.title || 'Untitled';
+                h3.appendChild(a);
+
+                const meta = document.createElement('div');
+                meta.className = 'result-meta';
+                try {
+                    meta.textContent = result.pub_date ? new Date(result.pub_date).toLocaleDateString() : 'Unknown date';
+                } catch (e) {
+                    meta.textContent = 'Unknown date';
+                }
+
+                const snippet = document.createElement('div');
+                snippet.className = 'result-snippet';
+                snippet.textContent = result.snippet || '';
+
+                const score = document.createElement('div');
+                score.className = 'result-score';
+                const s = (Number(result.score) || 0) * 100;
+                score.textContent = `Score: ${s.toFixed(1)}%`;
+
+                container.appendChild(h3);
+                container.appendChild(meta);
+                container.appendChild(snippet);
+                container.appendChild(score);
+                resultsDiv.appendChild(container);
+            });
         }
 
         // Auto-search if query is in URL
         const urlParams = new URLSearchParams(window.location.search);
         const queryParam = urlParams.get('q');
-        if (queryParam) {
+        const hasSSRResults = {{ 'true' if results and results|length > 0 else 'false' }};
+        if (queryParam && !hasSSRResults) {
             searchInput.value = queryParam;
             searchForm.dispatchEvent(new Event('submit'));
         }
