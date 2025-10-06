@@ -50,18 +50,8 @@ async def startup_event():
     """Initialize the application on startup."""
     logger.info("Starting Podcast Search API...")
     
-    try:
-        # Try to load the search index
-        if not is_index_loaded():
-            logger.info("Loading search index...")
-            load_faiss_index()
-            logger.info("Search index loaded successfully.")
-        else:
-            logger.info("Search index already loaded.")
-    except Exception as e:
-        logger.warning(f"Could not load search index: {e}")
-        logger.info("Application will start without search index. Use /api/refresh to load data.")
-    
+    # Skip FAISS index loading for now - use lexical search only
+    logger.info("Using lexical search only (FAISS index loading disabled)")
     logger.info("Application startup complete.")
 
 

@@ -32,7 +32,8 @@ EMBEDDINGS_PATH = DATA_DIR / "embeddings.npz"
 
 # Database settings
 DB_TIMEOUT = 30  # seconds
-DATABASE_URL = os.getenv("DATABASE_URL", f"sqlite:///{SQLITE_PATH}")
+# Use Railway PostgreSQL database - fallback to SQLite only if Railway URL not available
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://postgres:GlBQaOKdXJIxKiPAzXbJmxSkDUMXVrvM@switchback.proxy.rlwy.net:38301/railway")
 
 # Logging
 LOG_LEVEL = os.getenv("LOG_LEVEL", "INFO")
