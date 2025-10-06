@@ -213,7 +213,9 @@ async def test():
     return {
         "message": "FastAPI app is running on Railway!",
         "timestamp": "2024-01-01T00:00:00Z",
-        "version": "1.0.0"
+        "version": "1.0.0",
+        "database_url": os.getenv("DATABASE_URL", "not set"),
+        "railway_env": os.getenv("RAILWAY_ENVIRONMENT", "not set")
     }
 
 
